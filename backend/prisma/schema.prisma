@@ -86,6 +86,8 @@ model Vendor {
   order_items     OrderItem[]
   staff_pins      StaffPin[]
   promotions      Promotion[]
+  transactions    VendorTransaction[]
+  feedback        VendorFeedback[]
 
   @@map("vendors")
 }
@@ -394,4 +396,45 @@ model AuditLog {
   created_at  DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+// ─── Vendor Operations ────────────────────────────────────────────────────────
+
+model VendorTransaction {
+  id         String    @id @default(uuid())
+  vendor_id  String
+  type       String    // 'rent' | 'electricity' | 'water' | 'other'
+  month      String    // 'YYYY-MM'
+  is_paid    Boolean   @default(false)
+  amount     Float?
+  due_date   DateTime?
+  paid_at    DateTime?
+  notes      String?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  vendor Vendor @relation(fields: [vendor_id], references: [id])
+
+  @@unique([vendor_id, type, month])
+  @@map("vendor_transactions")
+}
+
+model VendorFeedback {
+  id          String    @id @default(uuid())
+  vendor_id   String
+  type        String    // 'complaint' | 'positive' | 'suggestion'
+  month       String    // 'YYYY-MM'
+  title       String
+  description String
+  severity    String?   // complaints: 'low' | 'medium' | 'high' | 'critical'
+  status      String    @default("pending") // 'pending' | 'acknowledged' | 'in_progress' | 'resolved' | 'dismissed'
+  admin_note  String?
+  reviewed_by String?
+  reviewed_at DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  vendor Vendor @relation(fields: [vendor_id], references: [id])
+
+  @@map("vendor_feedback")
 }

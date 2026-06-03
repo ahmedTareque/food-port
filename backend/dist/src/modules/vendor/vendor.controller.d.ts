@@ -5,29 +5,30 @@ export declare class VendorController {
     private vendorService;
     constructor(vendorService: VendorService);
     getDashboard(user: JwtUser): Promise<{
-        vendor_id: string;
-        today: {
-            order_count: number;
-            revenue: number;
-            avg_prep_time_minutes: number;
-            active_orders_count: number;
-            top_items: {
-                name: string;
-                count: number;
-            }[];
-        };
-        date: string;
+        orders_today: number;
+        revenue_today: number;
+        active_queue: number;
+        avg_prep_time: number;
+        top_items: {
+            name: string;
+            count: number;
+        }[];
+        recent_orders: {
+            id: string;
+            token_number: number;
+            total: number;
+            status: import(".prisma/client").$Enums.OrderStatus;
+            created_at: string;
+        }[];
     }>;
     getOrders(user: JwtUser, from?: string, to?: string, status?: string, page?: string, limit?: string): Promise<{
         data: {
             id: string;
-            order_id: string;
             token_number: number;
             table_number: number;
-            status: import(".prisma/client").$Enums.OrderItemStatus;
-            item_name: string;
-            quantity: number;
-            total_vendor_amount: number;
+            item_count: number;
+            total: number;
+            status: import(".prisma/client").$Enums.OrderStatus;
             created_at: string;
         }[];
         meta: {

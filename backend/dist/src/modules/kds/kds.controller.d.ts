@@ -7,7 +7,7 @@ export declare class KdsController {
     getOrders(user: JwtUser): Promise<{
         vendor_id: string;
         new: {
-            item_id: string;
+            order_item_id: string;
             order_id: string;
             token_number: number;
             table_number: number;
@@ -26,7 +26,7 @@ export declare class KdsController {
             created_at: string;
         }[];
         preparing: {
-            item_id: string;
+            order_item_id: string;
             order_id: string;
             token_number: number;
             table_number: number;
@@ -45,7 +45,7 @@ export declare class KdsController {
             created_at: string;
         }[];
         ready: {
-            item_id: string;
+            order_item_id: string;
             order_id: string;
             token_number: number;
             table_number: number;
@@ -65,7 +65,7 @@ export declare class KdsController {
         }[];
     }>;
     accept(itemId: string, user: JwtUser): Promise<{
-        item_id: string;
+        order_item_id: string;
         order_id: string;
         token_number: number;
         table_number: number;
@@ -84,7 +84,7 @@ export declare class KdsController {
         created_at: string;
     }>;
     preparing(itemId: string, user: JwtUser): Promise<{
-        item_id: string;
+        order_item_id: string;
         order_id: string;
         token_number: number;
         table_number: number;
@@ -103,7 +103,7 @@ export declare class KdsController {
         created_at: string;
     }>;
     ready(itemId: string, user: JwtUser): Promise<{
-        item_id: string;
+        order_item_id: string;
         order_id: string;
         token_number: number;
         table_number: number;
@@ -122,7 +122,7 @@ export declare class KdsController {
         created_at: string;
     }>;
     complete(itemId: string, user: JwtUser): Promise<{
-        item_id: string;
+        order_item_id: string;
         order_id: string;
         token_number: number;
         table_number: number;
@@ -141,7 +141,7 @@ export declare class KdsController {
         created_at: string;
     }>;
     reject(itemId: string, dto: RejectItemDto, user: JwtUser): Promise<{
-        item_id: string;
+        order_item_id: string;
         order_id: string;
         token_number: number;
         table_number: number;

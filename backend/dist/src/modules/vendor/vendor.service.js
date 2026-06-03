@@ -43,50 +43,55 @@ let VendorService = class VendorService {
         const avgPrepTime = completedItems.length > 0
             ? Math.round(completedItems.reduce((sum, i) => sum + i.estimated_prep_time, 0) / completedItems.length)
             : 10;
+        const recentOrders = [...orders]
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            .slice(0, 10)
+            .map((o) => ({
+            id: o.id,
+            token_number: o.token_number,
+            total: o.items.reduce((s, i) => s + i.total_price, 0),
+            status: o.status,
+            created_at: o.created_at.toISOString(),
+        }));
         return {
-            vendor_id: vendorId,
-            today: {
-                order_count: orders.length,
-                revenue: Math.round(revenue * 100) / 100,
-                avg_prep_time_minutes: avgPrepTime,
-                active_orders_count: activeItems,
-                top_items: topItems,
-            },
-            date: today.toISOString().slice(0, 10),
+            orders_today: orders.length,
+            revenue_today: Math.round(revenue * 100) / 100,
+            active_queue: activeItems,
+            avg_prep_time: avgPrepTime,
+            top_items: topItems,
+            recent_orders: recentOrders,
         };
     }
     async getOrders(user, from, to, status, page = 1, limit = 20) {
         const vendorId = this.requireVendor(user);
         const skip = (page - 1) * limit;
-        const where = {
-            vendor_id: vendorId,
+        const orderWhere = {
+            items: { some: { vendor_id: vendorId } },
             ...(status ? { status: status } : {}),
             ...(from || to ? { created_at: { ...(from ? { gte: new Date(from) } : {}), ...(to ? { lte: new Date(to) } : {}) } } : {}),
         };
-        const [items, total] = await Promise.all([
-            this.prisma.orderItem.findMany({
-                where,
-                include: { order: { select: { token_number: true, table_id: true, status: true } } },
+        const [orders, total] = await Promise.all([
+            this.prisma.order.findMany({
+                where: orderWhere,
+                include: {
+                    items: { where: { vendor_id: vendorId }, select: { total_price: true } },
+                    table: { select: { table_number: true } },
+                },
                 orderBy: { created_at: 'desc' },
                 skip,
                 take: limit,
             }),
-            this.prisma.orderItem.count({ where }),
+            this.prisma.order.count({ where: orderWhere }),
         ]);
-        const tableIds = [...new Set(items.map((i) => i.order.table_id))];
-        const tables = await this.prisma.table.findMany({ where: { id: { in: tableIds } }, select: { id: true, table_number: true } });
-        const tableMap = Object.fromEntries(tables.map((t) => [t.id, t.table_number]));
         return {
-            data: items.map((item) => ({
-                id: item.id,
-                order_id: item.order_id,
-                token_number: item.order.token_number,
-                table_number: tableMap[item.order.table_id] ?? 0,
-                status: item.status,
-                item_name: item.item_name,
-                quantity: item.quantity,
-                total_vendor_amount: item.total_price,
-                created_at: item.created_at.toISOString(),
+            data: orders.map((o) => ({
+                id: o.id,
+                token_number: o.token_number,
+                table_number: o.table?.table_number ?? null,
+                item_count: o.items.length,
+                total: o.items.reduce((s, i) => s + i.total_price, 0),
+                status: o.status,
+                created_at: o.created_at.toISOString(),
             })),
             meta: { page, limit, total, total_pages: Math.ceil(total / limit), has_next: skip + limit < total, has_prev: page > 1 },
         };

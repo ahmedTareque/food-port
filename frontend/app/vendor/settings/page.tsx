@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { apiFetch, apiPatch } from '@/lib/api';
+import { apiFetch, apiPut } from '@/lib/api';
 import { useUIStore } from '@/store/uiStore';
 import Button from '@/components/ui/Button';
 import GlassCard from '@/components/ui/GlassCard';
@@ -32,7 +32,7 @@ export default function SettingsPage() {
     if (!settings) return;
     setSaving(true);
     try {
-      await apiPatch('/vendor/settings', {
+      await apiPut('/vendor/settings', {
         name: settings.name,
         description: settings.description,
         cuisine_type: settings.cuisine_type,

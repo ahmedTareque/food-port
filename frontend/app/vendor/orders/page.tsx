@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { apiFetch } from '@/lib/api';
+import { apiFetchPaginated } from '@/lib/api';
 import Spinner from '@/components/ui/Spinner';
 import GlassCard from '@/components/ui/GlassCard';
 
@@ -12,11 +12,6 @@ interface VendorOrder {
   total: number;
   status: string;
   created_at: string;
-}
-
-interface OrdersResponse {
-  data: VendorOrder[];
-  meta: { total: number; page: number; limit: number };
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -40,10 +35,10 @@ export default function OrderHistoryPage() {
     setLoading(true);
     const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
     if (statusFilter) params.set('status', statusFilter);
-    apiFetch<OrdersResponse>(`/vendor/orders?${params}`)
-      .then((res) => {
-        setOrders(res.data);
-        setTotal(res.meta.total);
+    apiFetchPaginated<VendorOrder[]>(`/vendor/orders?${params}`)
+      .then(({ data, meta }) => {
+        setOrders(data);
+        setTotal(meta.total);
       })
       .catch(() => {})
       .finally(() => setLoading(false));

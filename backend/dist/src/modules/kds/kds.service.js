@@ -120,7 +120,7 @@ let KdsService = class KdsService {
     }
     formatCard(item, tableMap) {
         return {
-            item_id: item.id,
+            order_item_id: item.id,
             order_id: item.order_id,
             token_number: item.order.token_number,
             table_number: tableMap[item.order.table_id] ?? 0,

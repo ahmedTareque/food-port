@@ -22,6 +22,7 @@ const orders_module_1 = require("./modules/orders/orders.module");
 const kds_module_1 = require("./modules/kds/kds.module");
 const vendor_module_1 = require("./modules/vendor/vendor.module");
 const admin_module_1 = require("./modules/admin/admin.module");
+const vendor_operations_module_1 = require("./modules/vendor-operations/vendor-operations.module");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
 const response_transform_interceptor_1 = require("./common/interceptors/response-transform.interceptor");
 const jwt_auth_guard_1 = require("./common/guards/jwt-auth.guard");
@@ -45,6 +46,7 @@ exports.AppModule = AppModule = __decorate([
             kds_module_1.KdsModule,
             vendor_module_1.VendorModule,
             admin_module_1.AdminModule,
+            vendor_operations_module_1.VendorOperationsModule,
         ],
         providers: [
             { provide: core_1.APP_FILTER, useClass: http_exception_filter_1.HttpExceptionFilter },

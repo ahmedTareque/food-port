@@ -10,7 +10,7 @@ export declare class KdsService {
     getOrders(user: JwtUser): Promise<{
         vendor_id: string;
         new: {
-            item_id: string;
+            order_item_id: string;
             order_id: string;
             token_number: number;
             table_number: number;
@@ -29,7 +29,7 @@ export declare class KdsService {
             created_at: string;
         }[];
         preparing: {
-            item_id: string;
+            order_item_id: string;
             order_id: string;
             token_number: number;
             table_number: number;
@@ -48,7 +48,7 @@ export declare class KdsService {
             created_at: string;
         }[];
         ready: {
-            item_id: string;
+            order_item_id: string;
             order_id: string;
             token_number: number;
             table_number: number;
@@ -68,7 +68,7 @@ export declare class KdsService {
         }[];
     }>;
     updateItemStatus(itemId: string, newStatus: OrderItemStatus, user: JwtUser, rejectDto?: RejectItemDto): Promise<{
-        item_id: string;
+        order_item_id: string;
         order_id: string;
         token_number: number;
         table_number: number;

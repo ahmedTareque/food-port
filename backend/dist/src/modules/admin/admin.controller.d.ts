@@ -80,8 +80,8 @@ export declare class AdminController {
                     booth_color: string;
                 };
                 status: import(".prisma/client").$Enums.OrderItemStatus;
-                quantity: number;
                 item_name: string;
+                quantity: number;
                 total_price: number;
             }[];
             created_at: Date;
@@ -106,9 +106,9 @@ export declare class AdminController {
                 value: number;
                 min_order_amount: number | null;
                 max_uses: number | null;
+                current_uses: number;
                 valid_from: Date;
                 valid_to: Date;
-                current_uses: number;
             };
         } & {
             id: string;
@@ -125,9 +125,9 @@ export declare class AdminController {
             };
             modifiers: {
                 id: string;
-                modifier_id: string;
                 quantity: number;
                 order_item_id: string;
+                modifier_id: string;
                 modifier_name: string;
                 price_at_order: number;
             }[];
@@ -138,13 +138,13 @@ export declare class AdminController {
             updated_at: Date;
             status: import(".prisma/client").$Enums.OrderItemStatus;
             menu_item_id: string;
-            quantity: number;
-            special_instructions: string | null;
             order_id: string;
             item_name: string;
+            quantity: number;
             unit_price: number;
             modifier_price: number;
             total_price: number;
+            special_instructions: string | null;
             estimated_prep_time: number;
             accepted_at: Date | null;
             preparing_at: Date | null;
@@ -169,10 +169,10 @@ export declare class AdminController {
         status: import(".prisma/client").$Enums.OrderStatus;
         table_id: string;
         waiter_id: string | null;
-        session_id: string | null;
         idempotency_key: string;
         token_number: number;
         token_date: string;
+        session_id: string | null;
         payment_method: string;
         payment_status: string;
         subtotal: number;
@@ -186,10 +186,10 @@ export declare class AdminController {
         status: import(".prisma/client").$Enums.OrderStatus;
         table_id: string;
         waiter_id: string | null;
-        session_id: string | null;
         idempotency_key: string;
         token_number: number;
         token_date: string;
+        session_id: string | null;
         payment_method: string;
         payment_status: string;
         subtotal: number;
@@ -320,9 +320,9 @@ export declare class AdminController {
             value: number;
             min_order_amount: number | null;
             max_uses: number | null;
+            current_uses: number;
             valid_from: Date;
             valid_to: Date;
-            current_uses: number;
         }[];
         total: number;
         page: number;
@@ -339,9 +339,9 @@ export declare class AdminController {
         value: number;
         min_order_amount: number | null;
         max_uses: number | null;
+        current_uses: number;
         valid_from: Date;
         valid_to: Date;
-        current_uses: number;
     }>;
     updatePromotion(user: JwtUser, id: string, dto: UpdatePromotionDto): Promise<{
         id: string;
@@ -354,9 +354,9 @@ export declare class AdminController {
         value: number;
         min_order_amount: number | null;
         max_uses: number | null;
+        current_uses: number;
         valid_from: Date;
         valid_to: Date;
-        current_uses: number;
     }>;
     togglePromotion(user: JwtUser, id: string): Promise<{
         id: string;
@@ -424,9 +424,9 @@ export declare class PromotionsPublicController {
             value: number;
             min_order_amount: number | null;
             max_uses: number | null;
+            current_uses: number;
             valid_from: Date;
             valid_to: Date;
-            current_uses: number;
         };
         reason?: undefined;
     }>;

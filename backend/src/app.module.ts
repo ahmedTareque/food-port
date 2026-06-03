@@ -10,6 +10,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { KdsModule } from './modules/kds/kds.module';
 import { VendorModule } from './modules/vendor/vendor.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { VendorOperationsModule } from './modules/vendor-operations/vendor-operations.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
@@ -30,6 +31,7 @@ import { Reflector } from '@nestjs/core';
     KdsModule,
     VendorModule,
     AdminModule,
+    VendorOperationsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

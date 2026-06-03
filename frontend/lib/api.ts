@@ -46,6 +46,41 @@ export async function apiPatch<T>(endpoint: string, body: unknown): Promise<T> {
   });
 }
 
+export async function apiPut<T>(endpoint: string, body: unknown): Promise<T> {
+  return apiFetch<T>(endpoint, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+}
+
 export async function apiDelete<T>(endpoint: string): Promise<T> {
   return apiFetch<T>(endpoint, { method: 'DELETE' });
+}
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
+export async function apiFetchPaginated<T>(
+  endpoint: string,
+  options?: RequestInit,
+): Promise<{ data: T; meta: PaginationMeta }> {
+  const token = getToken();
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    ...options,
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.error?.message ?? 'API error');
+  }
+  return { data: json.data as T, meta: json.meta as PaginationMeta };
 }
