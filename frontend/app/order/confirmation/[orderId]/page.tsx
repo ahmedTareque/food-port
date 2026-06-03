@@ -3,8 +3,22 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiFetch } from '@/lib/api';
-import type { Order } from '@/types';
 import Spinner from '@/components/ui/Spinner';
+
+// Shape returned by GET /orders/:id/status
+interface OrderStatusResponse {
+  order_id: string;
+  token_number: number;
+  overall_status: string;
+  items: Array<{
+    id: string;
+    vendor_name: string;
+    vendor_color: string;
+    item_name: string;
+    status: string;
+    estimated_prep_time_minutes: number;
+  }>;
+}
 
 const MESSAGES = [
   "Your food is on its way! 🔥",
@@ -16,40 +30,44 @@ const MESSAGES = [
 
 const STATUS_COLORS: Record<string, string> = {
   pending: '#888888',
+  accepted: '#3B82F6',
   confirmed: '#3B82F6',
   preparing: '#8B5CF6',
   ready: '#10B981',
   completed: '#10B981',
+  rejected: '#EF4444',
 };
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pending',
+  accepted: 'Accepted',
   confirmed: 'Confirmed',
   preparing: 'Preparing...',
   ready: 'Ready! ✅',
   completed: 'Completed',
+  rejected: 'Rejected',
 };
 
 export default function ConfirmationPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const router = useRouter();
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<OrderStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [msgIdx, setMsgIdx] = useState(0);
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    apiFetch<Order>(`/orders/${orderId}/status`)
+    apiFetch<OrderStatusResponse>(`/orders/${orderId}/status`)
       .then(setOrder)
       .catch(() => {})
       .finally(() => setLoading(false));
 
     pollRef.current = setInterval(async () => {
       try {
-        const updated = await apiFetch<Order>(`/orders/${orderId}/status`);
+        const updated = await apiFetch<OrderStatusResponse>(`/orders/${orderId}/status`);
         setOrder(updated);
-        if (updated.status === 'completed') {
+        if (updated.overall_status === 'completed') {
           clearInterval(pollRef.current!);
         }
       } catch {}
@@ -96,9 +114,20 @@ export default function ConfirmationPage() {
     );
   }
 
-  const allReady = order.vendor_items.every((v) =>
-    ['ready', 'completed'].includes(v.status),
+  const allReady = order.items.every((i) =>
+    ['ready', 'completed', 'rejected'].includes(i.status),
   );
+
+  // Group items by vendor, pick the least-advanced status per vendor
+  const STATUS_RANK: Record<string, number> = { pending: 0, accepted: 1, preparing: 2, ready: 3, completed: 4, rejected: 4 };
+  const vendorMap = new Map<string, { vendor_name: string; vendor_color: string; status: string }>();
+  for (const item of order.items) {
+    const existing = vendorMap.get(item.vendor_name);
+    if (!existing || STATUS_RANK[item.status] < STATUS_RANK[existing.status]) {
+      vendorMap.set(item.vendor_name, { vendor_name: item.vendor_name, vendor_color: item.vendor_color, status: item.status });
+    }
+  }
+  const vendorRows = Array.from(vendorMap.values());
 
   const tokenStr = String(order.token_number).padStart(3, '0');
 
@@ -156,8 +185,8 @@ export default function ConfirmationPage() {
         {/* Vendor status rows */}
         <div className="glass rounded-2xl p-4 space-y-3 text-left mb-6">
           <h3 className="font-heading text-lg text-brand-white tracking-wide">ORDER STATUS</h3>
-          {order.vendor_items.map((v) => (
-            <div key={v.vendor_id} className="flex items-center justify-between">
+          {vendorRows.map((v) => (
+            <div key={v.vendor_name} className="flex items-center justify-between">
               <span className="text-sm font-body text-brand-chrome">{v.vendor_name}</span>
               <span
                 className="text-xs font-semibold px-2.5 py-1 rounded-lg"

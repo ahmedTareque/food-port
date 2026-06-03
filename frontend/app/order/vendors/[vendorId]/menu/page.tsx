@@ -105,7 +105,8 @@ export default function VendorMenuPage() {
     apiFetch<PubVendorMenuData>(`/vendors/${vendorId}/menu`)
       .then((d) => {
         setData(d);
-        if (d.categories[0]) setActiveCategory(d.categories[0].category.id);
+        const first = d.categories.find((c) => c.items.length > 0);
+        if (first) setActiveCategory(first.category.id);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -136,7 +137,8 @@ export default function VendorMenuPage() {
     return <div className="text-center py-20 text-brand-dim">Failed to load menu.</div>;
   }
 
-  const { vendor, categories } = data;
+  const { vendor } = data;
+  const categories = data.categories.filter((c) => c.items.length > 0);
 
   return (
     <PageTransition>
