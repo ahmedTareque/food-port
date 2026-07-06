@@ -21,6 +21,9 @@ export default function MenuManagementPage() {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [modifierItem, setModifierItem] = useState<MenuItem | null>(null);
+  const [menuSearch, setMenuSearch] = useState('');
+  const [newCatName, setNewCatName] = useState('');
+  const [addingCat, setAddingCat] = useState(false);
   const addToast = useUIStore((s) => s.addToast);
 
   async function load() {
@@ -55,31 +58,94 @@ export default function MenuManagementPage() {
     }
   }
 
+  async function createCategory() {
+    if (!newCatName.trim()) return;
+    setAddingCat(true);
+    try {
+      await apiPost('/vendor/categories', { name: newCatName.trim(), sort_order: (data?.categories.length ?? 0) + 1 });
+      setNewCatName('');
+      addToast({ message: 'Category created', type: 'success' });
+      load();
+    } catch {
+      addToast({ message: 'Failed to create category', type: 'error' });
+    } finally {
+      setAddingCat(false);
+    }
+  }
+
+  async function deleteCat(catId: string, catName: string) {
+    if (!confirm(`Delete category "${catName}"? Only possible if it has no items.`)) return;
+    try {
+      await apiDelete(`/vendor/categories/${catId}`);
+      if (activeCategory === catId) setActiveCategory(data?.categories.find((c) => c.id !== catId)?.id ?? null);
+      addToast({ message: 'Category deleted', type: 'success' });
+      load();
+    } catch (e: unknown) {
+      const msg = (e as { message?: string })?.message ?? 'Failed to delete';
+      addToast({ message: msg, type: 'error' });
+    }
+  }
+
   if (loading) return <div className="flex items-center justify-center h-full"><Spinner size="lg" /></div>;
   if (!data) return <div className="text-center py-20 text-brand-dim">Failed to load menu.</div>;
 
   const activeCat = data.categories.find((c) => c.id === activeCategory);
+  const filteredItems = (activeCat?.menu_items ?? []).filter((item) =>
+    !menuSearch || item.name.toLowerCase().includes(menuSearch.toLowerCase())
+  );
 
   return (
     <div className="flex h-full">
       {/* Category sidebar */}
-      <aside className="w-48 border-r border-white/6 flex flex-col pt-6 shrink-0">
+      <aside className="w-52 border-r border-white/6 flex flex-col pt-6 shrink-0">
         <div className="px-4 pb-3">
           <p className="text-xs text-brand-dim uppercase tracking-wider">Categories</p>
         </div>
-        {data.categories.map((cat) => (
+        <div className="flex-1 overflow-y-auto">
+          {data.categories.map((cat) => (
+            <div
+              key={cat.id}
+              className={`group flex items-center border-r-2 transition-all ${
+                activeCategory === cat.id
+                  ? 'border-brand-orange bg-brand-orange/5'
+                  : 'border-transparent'
+              }`}
+            >
+              <button
+                onClick={() => setActiveCategory(cat.id)}
+                className={`flex-1 px-4 py-2.5 text-left text-sm font-semibold transition-all ${
+                  activeCategory === cat.id ? 'text-brand-white' : 'text-brand-dim hover:text-brand-white'
+                }`}
+              >
+                {cat.name}
+              </button>
+              <button
+                onClick={() => deleteCat(cat.id, cat.name)}
+                className="opacity-0 group-hover:opacity-100 pr-3 text-red-400/60 hover:text-red-400 transition-all text-xs"
+                title="Delete category"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+        {/* Add category */}
+        <div className="border-t border-white/6 p-3 space-y-2">
+          <input
+            value={newCatName}
+            onChange={(e) => setNewCatName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && createCategory()}
+            placeholder="New category…"
+            className="w-full bg-brand-bg border border-white/10 rounded-lg px-3 py-1.5 text-xs text-brand-white focus:outline-none focus:border-brand-orange/60"
+          />
           <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`px-4 py-2.5 text-left text-sm font-semibold transition-all border-r-2 ${
-              activeCategory === cat.id
-                ? 'border-brand-orange text-brand-white bg-brand-orange/5'
-                : 'border-transparent text-brand-dim hover:text-brand-white'
-            }`}
+            onClick={createCategory}
+            disabled={addingCat || !newCatName.trim()}
+            className="w-full text-xs font-semibold text-brand-orange hover:text-orange-300 disabled:opacity-40 transition-colors py-1"
           >
-            {cat.name}
+            + Add Category
           </button>
-        ))}
+        </div>
       </aside>
 
       {/* Items list */}
@@ -89,11 +155,49 @@ export default function MenuManagementPage() {
             <h1 className="font-heading text-3xl text-brand-white tracking-wide">
               {activeCat?.name.toUpperCase() ?? 'MENU'}
             </h1>
-            <Button size="sm" onClick={() => setCreateOpen(true)}>+ New Item</Button>
+            <div className="flex items-center gap-2">
+              <input
+                value={menuSearch}
+                onChange={(e) => setMenuSearch(e.target.value)}
+                placeholder="Search items…"
+                className="bg-brand-bg border border-white/10 rounded-lg px-3 py-1.5 text-xs text-brand-white focus:outline-none focus:border-brand-orange/60 w-36"
+              />
+              {activeCategory && (
+                <>
+                  <button
+                    onClick={async () => {
+                      if (!confirm('Mark ALL items in this category as sold out (86)?')) return;
+                      try {
+                        await apiPatch(`/vendor/categories/${activeCategory}/bulk-availability`, { is_available: false });
+                        addToast({ message: '86\'d all items in category', type: 'success' });
+                        load();
+                      } catch { addToast({ message: 'Failed', type: 'error' }); }
+                    }}
+                    className="text-xs font-semibold text-red-400 hover:text-red-300 transition-colors px-3 py-1.5 rounded-lg border border-red-400/30 hover:border-red-400/60"
+                    title="Mark all items in this category as unavailable (86)"
+                  >
+                    86 ALL
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await apiPatch(`/vendor/categories/${activeCategory}/bulk-availability`, { is_available: true });
+                        addToast({ message: 'All items re-enabled', type: 'success' });
+                        load();
+                      } catch { addToast({ message: 'Failed', type: 'error' }); }
+                    }}
+                    className="text-xs font-semibold text-green-400 hover:text-green-300 transition-colors px-3 py-1.5 rounded-lg border border-green-400/30 hover:border-green-400/60"
+                  >
+                    RESTORE
+                  </button>
+                </>
+              )}
+              <Button size="sm" onClick={() => setCreateOpen(true)}>+ New Item</Button>
+            </div>
           </div>
 
           <div className="space-y-2">
-            {(activeCat?.menu_items ?? []).map((item) => (
+            {filteredItems.map((item) => (
               <div key={item.id} className="glass rounded-xl px-4 py-3 flex items-center gap-4">
                 {/* Thumbnail */}
                 {item.image_url && (
@@ -130,6 +234,19 @@ export default function MenuManagementPage() {
                   />
                 </button>
 
+                <button
+                  onClick={async () => {
+                    try {
+                      await apiPost(`/vendor/menu-items/${item.id}/duplicate`, {});
+                      addToast({ message: 'Item duplicated (disabled)', type: 'success' });
+                      load();
+                    } catch { addToast({ message: 'Failed to duplicate', type: 'error' }); }
+                  }}
+                  className="text-brand-dim hover:text-brand-chrome transition-colors text-xs shrink-0"
+                  title="Duplicate item"
+                >
+                  ⧉
+                </button>
                 <button
                   onClick={() => setModifierItem(item)}
                   className="text-brand-dim hover:text-kds-preparing transition-colors text-xs font-semibold shrink-0"

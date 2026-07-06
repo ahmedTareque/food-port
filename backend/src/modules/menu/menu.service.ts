@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
@@ -97,6 +97,41 @@ export class MenuService {
 
     if (!item) throw new NotFoundException('Menu item not found');
     return this.formatMenuItemDetail(item);
+  }
+
+  async validatePromoCode(code: string, subtotal: number) {
+    const now = new Date();
+    const promo = await this.prisma.promotion.findFirst({
+      where: {
+        code: code.toUpperCase(),
+        is_active: true,
+        valid_from: { lte: now },
+        valid_to: { gte: now },
+      },
+    });
+
+    if (!promo) throw new BadRequestException('Invalid or expired promo code');
+
+    if (promo.max_uses !== null && promo.current_uses >= promo.max_uses) {
+      throw new BadRequestException('Promo code usage limit reached');
+    }
+
+    if (promo.min_order_amount !== null && subtotal < promo.min_order_amount) {
+      throw new BadRequestException(`Minimum order amount $${promo.min_order_amount.toFixed(2)} required`);
+    }
+
+    const discount =
+      promo.type === 'percent'
+        ? Math.min(subtotal * (promo.value / 100), subtotal)
+        : Math.min(promo.value, subtotal);
+
+    return {
+      promotion_id: promo.id,
+      code: promo.code,
+      type: promo.type,
+      value: promo.value,
+      discount_amount: parseFloat(discount.toFixed(2)),
+    };
   }
 
   async getVendorCategories(vendorId: string) {

@@ -15,4 +15,5 @@ export declare class CreateOrderDto {
     waiter_id?: string;
     idempotency_key: string;
     items: CartItemDto[];
+    special_notes?: string;
 }

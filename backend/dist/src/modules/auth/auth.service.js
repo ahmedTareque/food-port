@@ -112,7 +112,7 @@ let AuthService = class AuthService {
         });
         let matchedPin = null;
         for (const sp of staffPins) {
-            const isMatch = await bcrypt.compare(dto.pin, sp.pin_hash);
+            const isMatch = await bcrypt.compare(`pin:${dto.pin}`, sp.pin_hash);
             if (isMatch) {
                 matchedPin = sp;
                 break;

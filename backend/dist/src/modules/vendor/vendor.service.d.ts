@@ -9,6 +9,8 @@ export declare class VendorService {
         revenue_today: number;
         active_queue: number;
         avg_prep_time: number;
+        avg_rating: number | null;
+        rating_count: number;
         top_items: {
             name: string;
             count: number;
@@ -39,6 +41,35 @@ export declare class VendorService {
             has_next: boolean;
             has_prev: boolean;
         };
+    }>;
+    getWeeklyRevenue(user: JwtUser): Promise<{
+        days: {
+            date: string;
+            revenue: number;
+            orders: number;
+        }[];
+    }>;
+    getOrderDetail(user: JwtUser, orderId: string): Promise<{
+        id: string;
+        token_number: number;
+        table_number: number;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        created_at: string;
+        special_notes: string | null;
+        items: {
+            id: string;
+            item_name: string;
+            quantity: number;
+            base_price: number;
+            total_price: number;
+            status: import(".prisma/client").$Enums.OrderItemStatus;
+            special_instructions: string | null;
+            modifiers: {
+                name: string;
+                price: number;
+            }[];
+        }[];
+        total: number;
     }>;
     getMenuItems(user: JwtUser, categoryId?: string, available?: boolean): Promise<{
         id: string;
@@ -259,6 +290,13 @@ export declare class VendorService {
         slug: string;
         sort_order: number;
     }>;
+    bulkSetCategoryAvailability(user: JwtUser, categoryId: string, is_available: boolean): Promise<{
+        updated: number;
+        is_available: boolean;
+    }>;
+    deleteCategory(user: JwtUser, categoryId: string): Promise<{
+        deleted: boolean;
+    }>;
     createModifierGroup(user: JwtUser, dto: CreateModifierGroupDto): Promise<{
         modifiers: {
             id: string;
@@ -347,6 +385,66 @@ export declare class VendorService {
         is_accepting_orders: boolean;
         status: import(".prisma/client").$Enums.VendorStatus;
     }>;
+    duplicateMenuItem(user: JwtUser, itemId: string): Promise<{
+        id: string;
+        name: string;
+    }>;
+    getPayoutSummary(user: JwtUser): Promise<{
+        revenue_this_month: number;
+        deductions_this_month: number;
+        net_this_month: number;
+        all_time_revenue: number;
+        transactions: {
+            id: string;
+            type: string;
+            month: string;
+            amount: number | null;
+            is_paid: boolean;
+            due_date: string | undefined;
+            paid_at: string | undefined;
+            notes: string | null;
+        }[];
+    }>;
+    listStaffPins(user: JwtUser): Promise<{
+        role: import(".prisma/client").$Enums.UserRole;
+        id: string;
+        is_active: boolean;
+        created_at: Date;
+        label: string;
+    }[]>;
+    createStaffPin(user: JwtUser, label: string, pin: string): Promise<{
+        role: import(".prisma/client").$Enums.UserRole;
+        id: string;
+        is_active: boolean;
+        created_at: Date;
+        label: string;
+    }>;
+    toggleStaffPin(user: JwtUser, pinId: string, is_active: boolean): Promise<{
+        id: string;
+        is_active: boolean;
+    }>;
+    deleteStaffPin(user: JwtUser, pinId: string): Promise<{
+        deleted: boolean;
+    }>;
+    getSalesReport(user: JwtUser, from?: string, to?: string): Promise<{
+        days: {
+            revenue: number;
+            date: string;
+            orders: number;
+        }[];
+        total_revenue: number;
+        total_orders: number;
+    }>;
+    getTopItemsReport(user: JwtUser, from?: string, to?: string, limit?: number): Promise<{
+        revenue: number;
+        item_name: string;
+        count: number;
+    }[]>;
+    getPeakHoursReport(user: JwtUser, from?: string, to?: string): Promise<{
+        day_of_week: number;
+        hour: number;
+        count: number;
+    }[]>;
     private requireVendor;
     private assertItemOwnership;
 }

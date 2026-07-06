@@ -9,15 +9,49 @@ import type { Order } from '@/types';
 import Button from '@/components/ui/Button';
 import PageTransition from '@/components/ui/PageTransition';
 
+interface PromoResult {
+  promotion_id: string;
+  code: string;
+  type: string;
+  value: number;
+  discount_amount: number;
+}
+
 export default function CartPage() {
   const router = useRouter();
   const { items, sessionId, tableId, updateQuantity, removeItem, clearCart, subtotal, tax, total, itemsByVendor } =
     useCartStore();
   const addToast = useUIStore((s) => s.addToast);
   const [placing, setPlacing] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoResult, setPromoResult] = useState<PromoResult | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
 
   const vendorGroups = itemsByVendor();
   const isEmpty = items.length === 0;
+
+  const discountedTotal = promoResult
+    ? Math.max(0, total() - promoResult.discount_amount)
+    : total();
+
+  async function applyPromo() {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    try {
+      const result = await apiPost<PromoResult>('/promos/validate', {
+        code: promoCode.trim(),
+        subtotal: subtotal(),
+      });
+      setPromoResult(result);
+      addToast({ message: `${result.code} applied — $${result.discount_amount.toFixed(2)} off!`, type: 'success' });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Invalid promo code';
+      addToast({ message: msg, type: 'error' });
+      setPromoResult(null);
+    } finally {
+      setPromoLoading(false);
+    }
+  }
 
   async function placeOrder() {
     setPlacing(true);
@@ -34,6 +68,7 @@ export default function CartPage() {
         session_id: sessionId,
         table_id: tableId,
         items: orderItems,
+        promotion_id: promoResult?.promotion_id,
         idempotency_key: crypto.randomUUID(),
       });
 
@@ -149,6 +184,44 @@ export default function CartPage() {
           </div>
         ))}
 
+        {/* Promo code */}
+        <div className="glass rounded-2xl p-4">
+          <p className="text-xs font-mono text-brand-dim tracking-widest mb-2">PROMO CODE</p>
+          {promoResult ? (
+            <div className="flex items-center justify-between bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
+              <div>
+                <span className="text-green-400 font-mono font-bold text-sm">{promoResult.code}</span>
+                <span className="text-green-400/70 text-xs ml-2">
+                  −${promoResult.discount_amount.toFixed(2)}
+                </span>
+              </div>
+              <button
+                onClick={() => { setPromoResult(null); setPromoCode(''); }}
+                className="text-red-400/70 hover:text-red-400 text-xs transition-colors"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                onKeyDown={(e) => e.key === 'Enter' && applyPromo()}
+                placeholder="ENTER CODE"
+                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-brand-white font-mono text-sm placeholder:text-brand-dim/40 outline-none focus:border-brand-orange/40 transition-colors"
+              />
+              <button
+                onClick={applyPromo}
+                disabled={promoLoading || !promoCode.trim()}
+                className="bg-brand-orange/20 border border-brand-orange/30 text-brand-orange font-semibold text-sm px-4 py-2 rounded-xl hover:bg-brand-orange/30 disabled:opacity-40 transition-all"
+              >
+                {promoLoading ? '...' : 'Apply'}
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Order summary */}
         <div className="glass rounded-2xl p-4 space-y-2">
           <div className="flex justify-between text-sm font-body text-brand-chrome">
@@ -159,9 +232,15 @@ export default function CartPage() {
             <span>Tax (8.25%)</span>
             <span className="font-mono">${tax().toFixed(2)}</span>
           </div>
+          {promoResult && (
+            <div className="flex justify-between text-sm font-body text-green-400">
+              <span>Promo ({promoResult.code})</span>
+              <span className="font-mono">−${promoResult.discount_amount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="border-t border-white/8 pt-2 mt-2 flex justify-between font-heading text-xl text-brand-white">
             <span>TOTAL</span>
-            <span className="font-mono text-brand-orange">${total().toFixed(2)}</span>
+            <span className="font-mono text-brand-orange">${discountedTotal.toFixed(2)}</span>
           </div>
         </div>
 

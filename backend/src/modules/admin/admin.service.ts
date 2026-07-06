@@ -5,6 +5,7 @@ import {
   CreateVendorDto, UpdateVendorDto, VendorStatusDto,
   CreateStaffDto, UpdateOrderStatusDto, CancelOrderDto,
   CreatePromotionDto, UpdatePromotionDto, ValidatePromoDto, CashLogDto,
+  CreateUserDto, UpdateUserDto, SystemSettingsDto,
 } from './dto/admin.dto';
 
 @Injectable()
@@ -479,10 +480,13 @@ export class AdminService {
       .sort((a, b) => b.revenue - a.revenue);
   }
 
-  async getCashLog(date?: string, page = 1, limit = 20) {
-    const where = date
-      ? { created_at: { gte: new Date(date), lt: new Date(new Date(date).getTime() + 86400000) } }
-      : {};
+  async getCashLog(date?: string, page = 1, limit = 20, from?: string, to?: string) {
+    let where: Record<string, unknown> = {};
+    if (from || to) {
+      where = { created_at: { ...(from ? { gte: new Date(from) } : {}), ...(to ? { lte: new Date(to + 'T23:59:59') } : {}) } };
+    } else if (date) {
+      where = { created_at: { gte: new Date(date), lt: new Date(new Date(date).getTime() + 86400000) } };
+    }
 
     const [total, logs] = await Promise.all([
       this.prisma.cashLog.count({ where }),
@@ -617,6 +621,133 @@ export class AdminService {
     ]);
 
     return { logs, total, page, pages: Math.ceil(total / limit) };
+  }
+
+  // ─── User Management ─────────────────────────────────────────────────────────
+
+  async getUsers(role?: string, page = 1, limit = 20) {
+    const where: Record<string, unknown> = {};
+    if (role) where.role = role;
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        select: { id: true, full_name: true, email: true, role: true, is_active: true, vendor_id: true, created_at: true,
+          vendor: { select: { name: true, booth_number: true } } },
+        orderBy: { created_at: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return { users, total, page, pages: Math.ceil(total / limit) };
+  }
+
+  async createUser(actor: JwtUser, dto: CreateUserDto) {
+    const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (exists) throw new ConflictException('Email already in use');
+
+    const bcrypt = await import('bcrypt');
+    const password_hash = await bcrypt.hash(dto.password, 10);
+
+    const user = await this.prisma.user.create({
+      data: { full_name: dto.full_name, email: dto.email, password_hash, role: dto.role as never, vendor_id: dto.vendor_id ?? null, is_active: true, supabase_id: `admin-created-${Date.now()}` },
+      select: { id: true, full_name: true, email: true, role: true, is_active: true, created_at: true },
+    });
+    await this.logAudit(actor, 'user.create', 'user', user.id, { email: user.email, role: user.role });
+    return user;
+  }
+
+  async updateUser(actor: JwtUser, userId: string, dto: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { ...(dto.full_name ? { full_name: dto.full_name } : {}), ...(dto.role ? { role: dto.role as never } : {}), ...(dto.is_active !== undefined ? { is_active: dto.is_active } : {}) },
+      select: { id: true, full_name: true, email: true, role: true, is_active: true },
+    });
+    await this.logAudit(actor, 'user.update', 'user', userId, dto as Record<string, unknown>);
+    return updated;
+  }
+
+  async createStaffForVendor(actor: JwtUser, vendorId: string, dto: CreateStaffDto) {
+    const vendor = await this.prisma.vendor.findUnique({ where: { id: vendorId } });
+    if (!vendor) throw new NotFoundException('Vendor not found');
+
+    const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (exists) throw new ConflictException('Email already in use');
+
+    const bcrypt = await import('bcrypt');
+    const password_hash = await bcrypt.hash(dto.pin ?? 'changeme123', 10);
+
+    const user = await this.prisma.user.create({
+      data: { full_name: dto.name, email: dto.email, password_hash, role: dto.role as never, vendor_id: vendorId, is_active: true, supabase_id: `staff-created-${Date.now()}` },
+      select: { id: true, full_name: true, email: true, role: true, is_active: true },
+    });
+    await this.logAudit(actor, 'staff.create', 'user', user.id, { vendor_id: vendorId, role: dto.role });
+    return user;
+  }
+
+  // ─── System Settings ─────────────────────────────────────────────────────────
+
+  async getSystemSettings() {
+    const config = await this.prisma.foodVillage.findFirst();
+    return config ?? { name: 'Food Village', tax_rate: 0.0825 };
+  }
+
+  async updateSystemSettings(actor: JwtUser, dto: SystemSettingsDto) {
+    const config = await this.prisma.foodVillage.findFirst();
+    const data: Record<string, unknown> = {};
+    if (dto.food_village_name) data.name = dto.food_village_name;
+    if (dto.tax_rate !== undefined) data.tax_rate = dto.tax_rate;
+
+    let updated;
+    if (config) {
+      updated = await this.prisma.foodVillage.update({ where: { id: config.id }, data });
+    } else {
+      updated = await this.prisma.foodVillage.create({ data: { name: dto.food_village_name ?? 'Food Village', tax_rate: dto.tax_rate ?? 0.0825 } });
+    }
+    await this.logAudit(actor, 'settings.update', 'config', updated.id, dto as Record<string, unknown>);
+    return updated;
+  }
+
+  // ─── Vendor Detail (deep dive) ────────────────────────────────────────────────
+
+  async getVendorDetail(id: string) {
+    const vendor = await this.prisma.vendor.findUnique({
+      where: { id },
+      include: {
+        categories: { include: { items: { where: { is_deleted: false }, select: { id: true, name: true, price: true, is_available: true } } } },
+        users: { select: { id: true, full_name: true, email: true, role: true, is_active: true } },
+        staff_pins: { select: { id: true, label: true, role: true, is_active: true } },
+      },
+    });
+    if (!vendor) throw new NotFoundException('Vendor not found');
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [ordersToday, revenueData, totalOrders] = await Promise.all([
+      this.prisma.order.count({ where: { items: { some: { vendor_id: id } }, created_at: { gte: today } } }),
+      this.prisma.orderItem.aggregate({
+        where: { vendor_id: id },
+        _sum: { total_price: true },
+      }),
+      this.prisma.order.count({ where: { items: { some: { vendor_id: id } } } }),
+    ]);
+
+    const { staff_pins, ...rest } = vendor;
+    return {
+      ...rest,
+      staffPins: staff_pins,
+      stats: {
+        orders_today: ordersToday,
+        total_orders: totalOrders,
+        total_revenue: Math.round((revenueData._sum.total_price ?? 0) * 100) / 100,
+      },
+    };
   }
 
   // ─── Health ──────────────────────────────────────────────────────────────────

@@ -33,10 +33,13 @@ let OrdersService = class OrdersService {
         if (existing)
             return this.formatOrder(existing);
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dto.table_id);
+        const tableNumber = isUuid ? NaN : parseInt(dto.table_id, 10);
+        if (!isUuid && isNaN(tableNumber))
+            throw new common_1.NotFoundException('Table not found');
         const table = await this.prisma.table.findFirst({
             where: isUuid
                 ? { id: dto.table_id, is_active: true }
-                : { table_number: parseInt(dto.table_id, 10), is_active: true },
+                : { table_number: tableNumber, is_active: true },
         });
         if (!table)
             throw new common_1.NotFoundException('Table not found');
@@ -54,6 +57,7 @@ let OrdersService = class OrdersService {
                 session_id: dto.session_id,
                 waiter_id: dto.waiter_id ?? null,
                 idempotency_key: dto.idempotency_key,
+                special_notes: dto.special_notes ?? null,
                 subtotal: Math.round(subtotal * 100) / 100,
                 tax_amount: taxAmount,
                 total,
@@ -134,6 +138,16 @@ let OrdersService = class OrdersService {
                 estimated_prep_time_minutes: item.estimated_prep_time,
             })),
         };
+    }
+    async findByToken(tokenNumber) {
+        const order = await this.prisma.order.findFirst({
+            where: { token_number: tokenNumber },
+            orderBy: { created_at: 'desc' },
+            select: { id: true, token_number: true, status: true, created_at: true },
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Order not found');
+        return order;
     }
     async cancel(orderId, reason) {
         const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { items: true } });
@@ -288,6 +302,22 @@ let OrdersService = class OrdersService {
         };
     }
     getItemTransitions() { return ITEM_TRANSITIONS; }
+    async rateOrder(orderId, rating, comment) {
+        const order = await this.prisma.order.findUnique({ where: { id: orderId }, select: { id: true, items: { select: { vendor_id: true }, take: 1 } } });
+        if (!order)
+            throw new common_1.NotFoundException('Order not found');
+        const vendorId = order.items[0]?.vendor_id;
+        if (!vendorId)
+            throw new common_1.BadRequestException('Cannot rate order with no items');
+        return this.prisma.orderRating.upsert({
+            where: { order_id: orderId },
+            create: { order_id: orderId, vendor_id: vendorId, rating, comment },
+            update: { rating, comment },
+        });
+    }
+    async getOrderRating(orderId) {
+        return this.prisma.orderRating.findUnique({ where: { order_id: orderId } });
+    }
 };
 exports.OrdersService = OrdersService;
 exports.OrdersService = OrdersService = __decorate([

@@ -31,7 +31,7 @@ export default function AdminFinancePage() {
       const [d, v, cl] = await Promise.all([
         apiFetch<DailySummary[]>(`/admin/finance/daily?from=${from}&to=${to}`),
         apiFetch<VendorRevenue[]>(`/admin/finance/by-vendor?from=${from}&to=${to}`),
-        apiFetch<CashLogResult>('/admin/finance/cash-log?limit=20'),
+        apiFetch<CashLogResult>(`/admin/finance/cash-log?limit=50&from=${from}&to=${to}`),
       ]);
       setDaily(d);
       setByVendor(v);

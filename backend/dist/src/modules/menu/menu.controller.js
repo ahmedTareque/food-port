@@ -35,6 +35,9 @@ let MenuController = class MenuController {
     getMenuItemDetail(itemId) {
         return this.menuService.getMenuItemDetail(itemId);
     }
+    validatePromo(body) {
+        return this.menuService.validatePromoCode(body.code, body.subtotal);
+    }
 };
 exports.MenuController = MenuController;
 __decorate([
@@ -72,6 +75,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], MenuController.prototype, "getMenuItemDetail", null);
+__decorate([
+    Public(),
+    (0, common_1.Post)('promos/validate'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], MenuController.prototype, "validatePromo", null);
 exports.MenuController = MenuController = __decorate([
     (0, throttler_1.SkipThrottle)({ auth: true, order: true }),
     (0, swagger_1.ApiTags)('Menu'),

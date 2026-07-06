@@ -1,12 +1,14 @@
 import { PrismaService } from '../../database/prisma.service';
 import { OrdersService } from '../orders/orders.service';
+import { KdsGateway } from './kds.gateway';
 import { RejectItemDto } from './dto/reject-item.dto';
 import { OrderItemStatus } from '@prisma/client';
 import { JwtUser } from '../../common/decorators/current-user.decorator';
 export declare class KdsService {
     private prisma;
     private ordersService;
-    constructor(prisma: PrismaService, ordersService: OrdersService);
+    private kdsGateway;
+    constructor(prisma: PrismaService, ordersService: OrdersService, kdsGateway: KdsGateway);
     getOrders(user: JwtUser): Promise<{
         vendor_id: string;
         new: {
@@ -89,7 +91,7 @@ export declare class KdsService {
     getQueueStats(user: JwtUser): Promise<{
         vendor_id: string;
         queue_depth: number;
-        avg_prep_time_minutes: number;
+        avg_wait_minutes: number;
         oldest_pending_minutes: number;
     }>;
     private formatCard;

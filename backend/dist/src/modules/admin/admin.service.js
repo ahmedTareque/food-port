@@ -1,10 +1,43 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
@@ -423,10 +456,14 @@ let AdminService = class AdminService {
         }))
             .sort((a, b) => b.revenue - a.revenue);
     }
-    async getCashLog(date, page = 1, limit = 20) {
-        const where = date
-            ? { created_at: { gte: new Date(date), lt: new Date(new Date(date).getTime() + 86400000) } }
-            : {};
+    async getCashLog(date, page = 1, limit = 20, from, to) {
+        let where = {};
+        if (from || to) {
+            where = { created_at: { ...(from ? { gte: new Date(from) } : {}), ...(to ? { lte: new Date(to + 'T23:59:59') } : {}) } };
+        }
+        else if (date) {
+            where = { created_at: { gte: new Date(date), lt: new Date(new Date(date).getTime() + 86400000) } };
+        }
         const [total, logs] = await Promise.all([
             this.prisma.cashLog.count({ where }),
             this.prisma.cashLog.findMany({
@@ -553,6 +590,117 @@ let AdminService = class AdminService {
             }),
         ]);
         return { logs, total, page, pages: Math.ceil(total / limit) };
+    }
+    async getUsers(role, page = 1, limit = 20) {
+        const where = {};
+        if (role)
+            where.role = role;
+        const [users, total] = await Promise.all([
+            this.prisma.user.findMany({
+                where,
+                select: { id: true, full_name: true, email: true, role: true, is_active: true, vendor_id: true, created_at: true,
+                    vendor: { select: { name: true, booth_number: true } } },
+                orderBy: { created_at: 'desc' },
+                skip: (page - 1) * limit,
+                take: limit,
+            }),
+            this.prisma.user.count({ where }),
+        ]);
+        return { users, total, page, pages: Math.ceil(total / limit) };
+    }
+    async createUser(actor, dto) {
+        const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+        if (exists)
+            throw new common_1.ConflictException('Email already in use');
+        const bcrypt = await Promise.resolve().then(() => __importStar(require('bcrypt')));
+        const password_hash = await bcrypt.hash(dto.password, 10);
+        const user = await this.prisma.user.create({
+            data: { full_name: dto.full_name, email: dto.email, password_hash, role: dto.role, vendor_id: dto.vendor_id ?? null, is_active: true, supabase_id: `admin-created-${Date.now()}` },
+            select: { id: true, full_name: true, email: true, role: true, is_active: true, created_at: true },
+        });
+        await this.logAudit(actor, 'user.create', 'user', user.id, { email: user.email, role: user.role });
+        return user;
+    }
+    async updateUser(actor, userId, dto) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            throw new common_1.NotFoundException('User not found');
+        const updated = await this.prisma.user.update({
+            where: { id: userId },
+            data: { ...(dto.full_name ? { full_name: dto.full_name } : {}), ...(dto.role ? { role: dto.role } : {}), ...(dto.is_active !== undefined ? { is_active: dto.is_active } : {}) },
+            select: { id: true, full_name: true, email: true, role: true, is_active: true },
+        });
+        await this.logAudit(actor, 'user.update', 'user', userId, dto);
+        return updated;
+    }
+    async createStaffForVendor(actor, vendorId, dto) {
+        const vendor = await this.prisma.vendor.findUnique({ where: { id: vendorId } });
+        if (!vendor)
+            throw new common_1.NotFoundException('Vendor not found');
+        const exists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+        if (exists)
+            throw new common_1.ConflictException('Email already in use');
+        const bcrypt = await Promise.resolve().then(() => __importStar(require('bcrypt')));
+        const password_hash = await bcrypt.hash(dto.pin ?? 'changeme123', 10);
+        const user = await this.prisma.user.create({
+            data: { full_name: dto.name, email: dto.email, password_hash, role: dto.role, vendor_id: vendorId, is_active: true, supabase_id: `staff-created-${Date.now()}` },
+            select: { id: true, full_name: true, email: true, role: true, is_active: true },
+        });
+        await this.logAudit(actor, 'staff.create', 'user', user.id, { vendor_id: vendorId, role: dto.role });
+        return user;
+    }
+    async getSystemSettings() {
+        const config = await this.prisma.foodVillage.findFirst();
+        return config ?? { name: 'Food Village', tax_rate: 0.0825 };
+    }
+    async updateSystemSettings(actor, dto) {
+        const config = await this.prisma.foodVillage.findFirst();
+        const data = {};
+        if (dto.food_village_name)
+            data.name = dto.food_village_name;
+        if (dto.tax_rate !== undefined)
+            data.tax_rate = dto.tax_rate;
+        let updated;
+        if (config) {
+            updated = await this.prisma.foodVillage.update({ where: { id: config.id }, data });
+        }
+        else {
+            updated = await this.prisma.foodVillage.create({ data: { name: dto.food_village_name ?? 'Food Village', tax_rate: dto.tax_rate ?? 0.0825 } });
+        }
+        await this.logAudit(actor, 'settings.update', 'config', updated.id, dto);
+        return updated;
+    }
+    async getVendorDetail(id) {
+        const vendor = await this.prisma.vendor.findUnique({
+            where: { id },
+            include: {
+                categories: { include: { items: { where: { is_deleted: false }, select: { id: true, name: true, price: true, is_available: true } } } },
+                users: { select: { id: true, full_name: true, email: true, role: true, is_active: true } },
+                staff_pins: { select: { id: true, label: true, role: true, is_active: true } },
+            },
+        });
+        if (!vendor)
+            throw new common_1.NotFoundException('Vendor not found');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const [ordersToday, revenueData, totalOrders] = await Promise.all([
+            this.prisma.order.count({ where: { items: { some: { vendor_id: id } }, created_at: { gte: today } } }),
+            this.prisma.orderItem.aggregate({
+                where: { vendor_id: id },
+                _sum: { total_price: true },
+            }),
+            this.prisma.order.count({ where: { items: { some: { vendor_id: id } } } }),
+        ]);
+        const { staff_pins, ...rest } = vendor;
+        return {
+            ...rest,
+            staffPins: staff_pins,
+            stats: {
+                orders_today: ordersToday,
+                total_orders: totalOrders,
+                total_revenue: Math.round((revenueData._sum.total_price ?? 0) * 100) / 100,
+            },
+        };
     }
     async getHealth() {
         try {

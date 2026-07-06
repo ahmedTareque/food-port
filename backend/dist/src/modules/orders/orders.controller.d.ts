@@ -90,6 +90,12 @@ export declare class OrdersController {
             estimated_prep_time_minutes: number;
         }[];
     }>;
+    findByToken(token: string): Promise<{
+        id: string;
+        created_at: Date;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        token_number: number;
+    }>;
     cancel(orderId: string, body: {
         reason?: string;
     }): Promise<{
@@ -129,4 +135,20 @@ export declare class OrdersController {
         created_at: string;
         updated_at: string;
     }>;
+    rate(orderId: string, rating: number, comment?: string): Promise<{
+        id: string;
+        vendor_id: string;
+        created_at: Date;
+        rating: number;
+        order_id: string;
+        comment: string | null;
+    }>;
+    getRating(orderId: string): Promise<{
+        id: string;
+        vendor_id: string;
+        created_at: Date;
+        rating: number;
+        order_id: string;
+        comment: string | null;
+    } | null>;
 }

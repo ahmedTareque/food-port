@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { apiFetch, apiPost } from '@/lib/api';
 import { useUIStore } from '@/store/uiStore';
 import type { AdminOrder, OrderStatus } from '@/types';
@@ -7,6 +8,11 @@ import GlassCard from '@/components/ui/GlassCard';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import Modal from '@/components/ui/Modal';
+
+interface OrderDetail extends AdminOrder {
+  history: { id: string; from_status: string | null; to_status: string; reason: string | null; created_at: string }[];
+  promotions?: { promotion: { code: string; discount_type: string; discount_value: number } }[];
+}
 
 const STATUSES: OrderStatus[] = ['pending', 'confirmed', 'partially_ready', 'ready', 'completed', 'cancelled'];
 const STATUS_COLOR: Record<string, string> = {
@@ -25,8 +31,12 @@ export default function AdminOrdersPage() {
   const [data, setData] = useState<OrdersResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
+  const [vendorFilter, setVendorFilter] = useState('');
+  const [vendorList, setVendorList] = useState<{ id: string; name: string }[]>([]);
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<AdminOrder | null>(null);
+  const [detail, setDetail] = useState<OrderDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelling, setCancelling] = useState(false);
@@ -37,13 +47,37 @@ export default function AdminOrdersPage() {
     try {
       const params = new URLSearchParams({ page: String(page), limit: '20' });
       if (statusFilter) params.set('status', statusFilter);
+      if (vendorFilter) params.set('vendor_id', vendorFilter);
       const res = await apiFetch<OrdersResult>(`/admin/orders?${params}`);
       setData(res);
     } catch {}
     setLoading(false);
-  }, [page, statusFilter]);
+  }, [page, statusFilter, vendorFilter]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    apiFetch<{ id: string; name: string }[]>('/admin/vendors?limit=100')
+      .then((d) => setVendorList(Array.isArray(d) ? d : []))
+      .catch(() => {});
+  }, []);
+
+  async function openDetail(order: AdminOrder) {
+    setSelected(order);
+    setDetail(null);
+    setDetailLoading(true);
+    try {
+      const d = await apiFetch<OrderDetail>(`/admin/orders/${order.id}`);
+      setDetail(d);
+    } catch {}
+    setDetailLoading(false);
+  }
+
+  function closeDetail() {
+    setSelected(null);
+    setDetail(null);
+    setCancelOpen(false);
+  }
 
   async function handleCancel() {
     if (!selected || !cancelReason) return;
@@ -71,6 +105,20 @@ export default function AdminOrdersPage() {
         <h1 className="font-heading text-4xl text-brand-white tracking-widest">ORDERS</h1>
         <Button variant="secondary" size="sm" onClick={exportCSV}>Export CSV</Button>
       </div>
+
+      {/* Vendor filter */}
+      {vendorList.length > 0 && (
+        <div className="mb-3">
+          <select
+            value={vendorFilter}
+            onChange={(e) => { setVendorFilter(e.target.value); setPage(1); }}
+            className="bg-brand-card border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+          >
+            <option value="">All Vendors</option>
+            {vendorList.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+          </select>
+        </div>
+      )}
 
       {/* Status filters */}
       <div className="flex gap-2 flex-wrap mb-5">
@@ -111,7 +159,7 @@ export default function AdminOrdersPage() {
                 {(data?.orders ?? []).map((order) => (
                   <tr
                     key={order.id}
-                    onClick={() => setSelected(order)}
+                    onClick={() => openDetail(order)}
                     className="hover:bg-white/2 transition-colors cursor-pointer"
                   >
                     <td className="px-5 py-3 font-heading text-2xl text-brand-orange">
@@ -151,49 +199,102 @@ export default function AdminOrdersPage() {
         </>
       )}
 
-      {/* Order detail modal */}
-      <Modal isOpen={!!selected && !cancelOpen} onClose={() => setSelected(null)} title={`Order #${String(selected?.token_number ?? 0).padStart(3,'0')}`} size="lg">
+      {/* Slide-in order detail panel */}
+      <AnimatePresence>
         {selected && (
-          <div className="p-5 space-y-4">
-            <div className="flex gap-4 text-sm">
-              <div><p className="text-brand-dim text-xs">Table</p><p className="text-brand-white">T{selected.table_number}</p></div>
-              <div><p className="text-brand-dim text-xs">Status</p>
-                <span className="capitalize" style={{ color: STATUS_COLOR[selected.status] }}>{selected.status.replace('_', ' ')}</span>
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 z-40"
+              onClick={closeDetail}
+            />
+            <motion.div
+              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed top-0 right-0 h-full w-[420px] max-w-full bg-brand-card border-l border-white/8 z-50 flex flex-col overflow-hidden"
+            >
+              <div className="flex items-center justify-between px-6 py-5 border-b border-white/6 shrink-0">
+                <div>
+                  <h2 className="font-heading text-2xl text-brand-orange tracking-widest">
+                    #{String(selected.token_number).padStart(3, '0')}
+                  </h2>
+                  <p className="text-xs text-brand-dim font-mono">{new Date(selected.created_at).toLocaleString()}</p>
+                </div>
+                <button onClick={closeDetail} className="text-brand-dim hover:text-brand-white text-xl p-1">✕</button>
               </div>
-              <div><p className="text-brand-dim text-xs">Total</p><p className="font-mono text-brand-yellow">${selected.total.toFixed(2)}</p></div>
-            </div>
 
-            <div>
-              <p className="text-xs text-brand-dim uppercase tracking-wider mb-2">Items</p>
-              <div className="space-y-1.5">
-                {selected.items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center px-3 py-2 bg-brand-bg/60 rounded-lg">
-                    <div>
-                      <p className="text-sm text-brand-white">{item.quantity}× {item.item_name}</p>
-                      <p className="text-xs font-mono" style={{ color: item.vendor?.booth_color ?? '#888' }}>{item.vendor?.name}</p>
+              <div className="flex-1 overflow-y-auto p-5 space-y-5">
+                {/* Summary */}
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: 'Table', value: `T${selected.table_number}` },
+                    { label: 'Status', value: selected.status.replace('_', ' '), color: STATUS_COLOR[selected.status] },
+                    { label: 'Total', value: `$${selected.total.toFixed(2)}`, color: '#F59E0B' },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-brand-bg/50 rounded-xl p-3">
+                      <p className="text-xs text-brand-dim mb-0.5">{s.label}</p>
+                      <p className="font-semibold capitalize text-sm font-mono" style={{ color: s.color ?? undefined }}>{s.value}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-mono text-brand-yellow text-sm">${item.total_price.toFixed(2)}</p>
-                      <span className="text-xs capitalize" style={{ color: STATUS_COLOR[item.status] }}>{item.status}</span>
+                  ))}
+                </div>
+
+                {/* Items */}
+                <div>
+                  <p className="text-xs text-brand-dim uppercase tracking-wider mb-2">Items</p>
+                  {detailLoading ? (
+                    <div className="flex justify-center py-6"><Spinner size="sm" /></div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {(detail?.items ?? selected.items).map((item) => (
+                        <div key={item.id} className="flex justify-between items-center px-3 py-2.5 bg-brand-bg/60 rounded-xl">
+                          <div>
+                            <p className="text-sm text-brand-white">{item.quantity}× {item.item_name}</p>
+                            <p className="text-xs font-mono" style={{ color: item.vendor?.booth_color ?? '#888' }}>{item.vendor?.name}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-mono text-brand-yellow text-sm">${item.total_price.toFixed(2)}</p>
+                            <span className="text-xs capitalize" style={{ color: STATUS_COLOR[item.status] ?? '#888' }}>{item.status}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Status history */}
+                {detail?.history && detail.history.length > 0 && (
+                  <div>
+                    <p className="text-xs text-brand-dim uppercase tracking-wider mb-2">Status History</p>
+                    <div className="relative pl-4 border-l border-white/8 space-y-3">
+                      {detail.history.map((h) => (
+                        <div key={h.id} className="relative">
+                          <div className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full border border-white/20 bg-brand-card" />
+                          <p className="text-xs font-mono text-brand-dim">{new Date(h.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                          <p className="text-sm text-brand-chrome capitalize">
+                            {h.from_status ? (
+                              <><span style={{ color: STATUS_COLOR[h.from_status] ?? '#888' }}>{h.from_status.replace('_',' ')}</span>{' → '}</>
+                            ) : null}
+                            <span style={{ color: STATUS_COLOR[h.to_status] ?? '#888' }}>{h.to_status.replace('_',' ')}</span>
+                          </p>
+                          {h.reason && <p className="text-xs text-brand-dim italic">{h.reason}</p>}
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                )}
               </div>
-            </div>
 
-            {selected.status !== 'cancelled' && selected.status !== 'completed' && (
-              <Button
-                variant="danger"
-                size="md"
-                className="w-full"
-                onClick={() => setCancelOpen(true)}
-              >
-                Cancel Order
-              </Button>
-            )}
-          </div>
+              {selected.status !== 'cancelled' && selected.status !== 'completed' && (
+                <div className="p-5 border-t border-white/6 shrink-0">
+                  <Button variant="danger" size="md" className="w-full" onClick={() => setCancelOpen(true)}>
+                    Cancel Order
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+          </>
         )}
-      </Modal>
+      </AnimatePresence>
 
       {/* Cancel reason modal */}
       <Modal isOpen={cancelOpen} onClose={() => setCancelOpen(false)} title="Cancel Order" size="sm">

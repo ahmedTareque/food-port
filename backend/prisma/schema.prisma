@@ -88,6 +88,7 @@ model Vendor {
   promotions      Promotion[]
   transactions    VendorTransaction[]
   feedback        VendorFeedback[]
+  ratings         OrderRating[]
 
   @@map("vendors")
 }
@@ -262,6 +263,7 @@ model Order {
   tax_amount      Float
   total           Float
   idempotency_key String      @unique
+  special_notes   String?
   created_at      DateTime    @default(now())
   updated_at      DateTime    @updatedAt
 
@@ -271,6 +273,7 @@ model Order {
   history    OrderStatusHistory[]
   promotions OrderPromotion[]
   cash_logs  CashLog[]
+  rating     OrderRating?
 
   @@unique([token_number, token_date])
   @@map("orders")
@@ -437,4 +440,18 @@ model VendorFeedback {
   vendor Vendor @relation(fields: [vendor_id], references: [id])
 
   @@map("vendor_feedback")
+}
+
+model OrderRating {
+  id         String   @id @default(uuid())
+  order_id   String   @unique
+  vendor_id  String
+  rating     Int      // 1–5
+  comment    String?
+  created_at DateTime @default(now())
+
+  order  Order  @relation(fields: [order_id], references: [id])
+  vendor Vendor @relation(fields: [vendor_id], references: [id])
+
+  @@map("order_ratings")
 }

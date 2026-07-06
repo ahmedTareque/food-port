@@ -162,7 +162,7 @@ export declare class KdsController {
     queueStats(user: JwtUser): Promise<{
         vendor_id: string;
         queue_depth: number;
-        avg_prep_time_minutes: number;
+        avg_wait_minutes: number;
         oldest_pending_minutes: number;
     }>;
 }

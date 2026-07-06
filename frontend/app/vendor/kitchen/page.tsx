@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { apiFetch, apiPatch } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
+import { useKdsSocket } from '@/hooks/useKdsSocket';
 import type { KDSOrder, OrderItemStatus } from '@/types';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
@@ -45,6 +46,32 @@ function PrepTimer({ startTime }: { startTime: string }) {
   );
 }
 
+function UrgencyBorder({ elapsed }: { elapsed: number }) {
+  const color = elapsed > 600 ? '#EF4444' : elapsed > 300 ? '#F59E0B' : 'transparent';
+  if (color === 'transparent') return null;
+  return <div className="absolute inset-0 rounded-2xl border-2 pointer-events-none" style={{ borderColor: color }} />;
+}
+
+function PrepCountdown({ acceptedAt, prepMinutes }: { acceptedAt: string; prepMinutes: number }) {
+  const [remaining, setRemaining] = useState(0);
+  useEffect(() => {
+    const deadline = new Date(acceptedAt).getTime() + prepMinutes * 60000;
+    const tick = () => setRemaining(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [acceptedAt, prepMinutes]);
+
+  const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+  const ss = String(remaining % 60).padStart(2, '0');
+  const overdue = remaining === 0;
+  return (
+    <div className={`flex items-center gap-1 text-xs font-mono tabular-nums ${overdue ? 'text-red-400 animate-pulse' : 'text-green-400'}`}>
+      {overdue ? '⚠ OVERDUE' : `⏱ ${mm}:${ss}`}
+    </div>
+  );
+}
+
 function KDSCard({
   order,
   onAction,
@@ -66,6 +93,8 @@ function KDSCard({
       ? { label: 'COMPLETE', status: 'completed' }
       : null;
 
+  const elapsed = Math.floor((Date.now() - new Date(order.created_at).getTime()) / 1000);
+
   return (
     <>
       <motion.div
@@ -73,17 +102,24 @@ function KDSCard({
         initial={{ opacity: 0, y: 16, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="glass rounded-2xl overflow-hidden"
+        className="glass rounded-2xl overflow-hidden relative"
       >
+        <UrgencyBorder elapsed={elapsed} />
         <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-white/6">
           <span className="font-heading text-4xl text-brand-orange">
             #{String(order.token_number).padStart(3, '0')}
           </span>
-          <div className="text-right">
+          <div className="text-right space-y-0.5">
             {order.table_number && (
               <p className="font-mono text-xs text-brand-dim">Table {order.table_number}</p>
             )}
             <PrepTimer startTime={order.created_at} />
+            {order.accepted_at && order.estimated_prep_time_minutes && (
+              <PrepCountdown
+                acceptedAt={order.accepted_at}
+                prepMinutes={order.estimated_prep_time_minutes}
+              />
+            )}
           </div>
         </div>
 
@@ -174,6 +210,11 @@ export default function KDSPage() {
   const [orders, setOrders] = useState<KDSOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
+  const [undoQueue, setUndoQueue] = useState<{ itemId: string; prevStatus: OrderItemStatus; label: string; expires: number }[]>([]);
+  const [queueStats, setQueueStats] = useState<{ queue_depth: number; avg_wait_minutes: number; oldest_pending_minutes: number } | null>(null);
+  const [isAccepting, setIsAccepting] = useState(true);
+  const [pauseLoading, setPauseLoading] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
   const prevCountRef = useRef(0);
 
@@ -184,15 +225,72 @@ export default function KDSPage() {
     } catch {}
   }, []);
 
+  const fetchQueueStats = useCallback(async () => {
+    try {
+      const data = await apiFetch<{ queue_depth: number; avg_prep_time_minutes: number; oldest_pending_minutes: number }>('/kds/queue-stats');
+      setQueueStats({ queue_depth: data.queue_depth, avg_wait_minutes: data.avg_prep_time_minutes, oldest_pending_minutes: data.oldest_pending_minutes });
+    } catch {}
+  }, []);
+
+  const fetchVendorStatus = useCallback(async () => {
+    try {
+      const data = await apiFetch<{ is_accepting_orders: boolean }>('/vendor/settings');
+      setIsAccepting(data.is_accepting_orders);
+    } catch {}
+  }, []);
+
+  const togglePause = async () => {
+    setPauseLoading(true);
+    try {
+      await apiPatch('/vendor/status', { is_accepting_orders: !isAccepting });
+      setIsAccepting((v) => !v);
+    } finally {
+      setPauseLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchOrders().finally(() => setLoading(false));
-    const interval = setInterval(fetchOrders, 8000);
+    fetchQueueStats();
+    fetchVendorStatus();
+    const interval = setInterval(() => { fetchOrders(); fetchQueueStats(); }, 8000);
     return () => clearInterval(interval);
-  }, [fetchOrders]);
+  }, [fetchOrders, fetchQueueStats, fetchVendorStatus]);
 
-  // Chime on new orders
+  // Browser notification permission request on mount
+  useEffect(() => {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
+  }, []);
+
+  // WebSocket real-time push
+  useKdsSocket(user?.vendor_id ?? null, {
+    onNewOrder: () => {
+      setWsConnected(true);
+      fetchOrders();
+      // Browser push notification
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        new Notification('New Order', { body: 'A new order just came in!', icon: '/favicon.ico' });
+      }
+    },
+    onOrderUpdate: (update) => {
+      setWsConnected(true);
+      const upd = update as KDSOrder;
+      setOrders((prev) =>
+        prev.map((o) => (o.order_item_id === upd.order_item_id ? { ...o, ...upd } : o)),
+      );
+    },
+  });
+
+  // Chime + browser notification on new orders
   useEffect(() => {
     const newCount = orders.filter((o) => o.status === 'pending').length;
+    if (newCount > prevCountRef.current && !wsConnected) {
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        new Notification('New Order', { body: `${newCount - prevCountRef.current} new order(s) arrived`, icon: '/favicon.ico' });
+      }
+    }
     if (!isKDSMuted && newCount > prevCountRef.current) {
       if (!audioRef.current) audioRef.current = new AudioContext();
       const ctx = audioRef.current;
@@ -209,7 +307,16 @@ export default function KDSPage() {
     prevCountRef.current = newCount;
   }, [orders, isKDSMuted]);
 
+  // Undo queue cleanup
+  useEffect(() => {
+    const id = setInterval(() => {
+      setUndoQueue((q) => q.filter((u) => u.expires > Date.now()));
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
   async function handleAction(itemId: string, status: OrderItemStatus, rejection_reason?: string) {
+    const prevStatus = orders.find((o) => o.order_item_id === itemId)?.status as OrderItemStatus | undefined;
     const endpoint =
       status === 'accepted' ? `/kds/items/${itemId}/accept`
       : status === 'preparing' ? `/kds/items/${itemId}/preparing`
@@ -220,6 +327,29 @@ export default function KDSPage() {
     setOrders((prev) =>
       prev.map((o) => (o.order_item_id === itemId ? { ...o, status } : o)),
     );
+    // Add undo entry (15s window, not for reject)
+    if (prevStatus && status !== 'rejected') {
+      setUndoQueue((q) => [
+        ...q.filter((u) => u.itemId !== itemId),
+        { itemId, prevStatus, label: `→ ${status.toUpperCase()}`, expires: Date.now() + 15000 },
+      ]);
+    }
+  }
+
+  async function handleUndo(itemId: string, prevStatus: OrderItemStatus) {
+    setUndoQueue((q) => q.filter((u) => u.itemId !== itemId));
+    // Revert by calling the previous status endpoint
+    const endpoint =
+      prevStatus === 'accepted' ? `/kds/items/${itemId}/accept`
+      : prevStatus === 'preparing' ? `/kds/items/${itemId}/preparing`
+      : prevStatus === 'pending' ? `/kds/items/${itemId}/accept`  // revert to pending via accept is close enough
+      : `/kds/items/${itemId}/ready`;
+    try {
+      await apiPatch(endpoint, {});
+      setOrders((prev) =>
+        prev.map((o) => (o.order_item_id === itemId ? { ...o, status: prevStatus } : o)),
+      );
+    } catch {}
   }
 
   const toggleFS = () => {
@@ -237,17 +367,78 @@ export default function KDSPage() {
 
   return (
     <div className="flex flex-col h-full bg-brand-bg">
+      {/* Undo toast strip */}
+      <AnimatePresence>
+        {undoQueue.map((u) => (
+          <motion.div
+            key={u.itemId}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-4 right-4 z-[9999] flex items-center gap-3 bg-brand-card border border-white/10 rounded-xl px-4 py-3 shadow-xl"
+          >
+            <span className="text-xs font-body text-brand-chrome">
+              Item {u.label}
+            </span>
+            <span className="text-xs font-mono text-brand-dim">
+              {Math.ceil(Math.max(0, (u.expires - Date.now()) / 1000))}s
+            </span>
+            <button
+              onClick={() => handleUndo(u.itemId, u.prevStatus)}
+              className="text-xs font-semibold text-brand-orange hover:text-orange-300 transition-colors"
+            >
+              UNDO
+            </button>
+          </motion.div>
+        ))}
+      </AnimatePresence>
       {/* KDS Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-white/6">
         <div>
-          <h1 className="font-heading text-2xl text-brand-white tracking-wide">
-            KITCHEN DISPLAY
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="font-heading text-2xl text-brand-white tracking-wide">
+              KITCHEN DISPLAY
+            </h1>
+            <span
+              title={wsConnected ? 'Live (WebSocket)' : 'Polling'}
+              className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`}
+            />
+          </div>
           <p className="text-xs text-brand-dim font-mono">
             {newOrders.length} new · {preparingOrders.length} preparing · {readyOrders.length} ready
           </p>
+          {queueStats && (
+            <div className="flex items-center gap-4 mt-1">
+              <span className="text-xs font-mono text-brand-chrome">
+                <span className="text-brand-dim">Queue:</span>{' '}
+                <span className={queueStats.queue_depth > 10 ? 'text-red-400' : queueStats.queue_depth > 5 ? 'text-amber-400' : 'text-green-400'}>
+                  {queueStats.queue_depth}
+                </span>
+              </span>
+              <span className="text-xs font-mono text-brand-chrome">
+                <span className="text-brand-dim">Avg wait:</span> {queueStats.avg_wait_minutes}m
+              </span>
+              {queueStats.oldest_pending_minutes > 0 && (
+                <span className={`text-xs font-mono ${queueStats.oldest_pending_minutes > 15 ? 'text-red-400 animate-pulse' : 'text-brand-chrome'}`}>
+                  <span className="text-brand-dim">Oldest:</span> {queueStats.oldest_pending_minutes}m
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={togglePause}
+            disabled={pauseLoading}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+              isAccepting
+                ? 'bg-green-500/15 text-green-400 hover:bg-red-500/15 hover:text-red-400'
+                : 'bg-red-500/20 text-red-400 animate-pulse hover:bg-green-500/15 hover:text-green-400'
+            }`}
+            title={isAccepting ? 'Pause ordering' : 'Resume ordering'}
+          >
+            {isAccepting ? '▶ OPEN' : '⏸ PAUSED'}
+          </button>
           <button
             onClick={toggleKDSMute}
             className={`p-2 rounded-lg transition-all ${isKDSMuted ? 'bg-red-500/20 text-red-400' : 'bg-brand-card text-brand-chrome hover:text-brand-white'}`}

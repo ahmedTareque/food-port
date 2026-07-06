@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsUUID, IsOptional, ValidateNested, IsInt, Min, MaxLength } from 'class-validator';
+import { IsString, IsArray, IsUUID, IsOptional, ValidateNested, IsInt, Min, MaxLength, ArrayMinSize } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CartModifierDto {
@@ -47,7 +47,13 @@ export class CreateOrderDto {
   idempotency_key: string;
 
   @IsArray()
+  @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => CartItemDto)
   items: CartItemDto[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  special_notes?: string;
 }

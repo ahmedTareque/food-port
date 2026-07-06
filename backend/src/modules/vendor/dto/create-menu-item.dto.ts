@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsUUID, IsOptional, IsArray, IsBoolean, Min, IsInt } from 'class-validator';
+import { IsString, IsNumber, IsUUID, IsOptional, IsArray, IsBoolean, Min, IsInt, IsNotEmpty } from 'class-validator';
 
 export class CreateMenuItemDto {
   @IsString()
@@ -50,6 +50,7 @@ export class UpdateAvailabilityDto {
 
 export class CreateCategoryDto {
   @IsString()
+  @IsNotEmpty()
   name: string;
 
   @IsOptional()
@@ -104,6 +105,7 @@ export class UpdateVendorSettingsDto {
   @IsOptional() @IsInt() @Min(1) avg_prep_time_minutes?: number;
   @IsOptional() operating_hours?: Record<string, { open: string; close: string; is_closed: boolean }>;
   @IsOptional() notification_preferences?: { new_order_sound?: boolean; volume?: number };
+  @IsOptional() @IsString() logo_url?: string;
 }
 
 export class UpdateVendorStatusDto {

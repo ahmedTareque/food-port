@@ -12,8 +12,9 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser, JwtUser } from '../../common/decorators/current-user.decorator';
 import {
   CreateVendorDto, UpdateVendorDto, VendorStatusDto,
-  UpdateOrderStatusDto, CancelOrderDto,
+  CreateStaffDto, UpdateOrderStatusDto, CancelOrderDto,
   CreatePromotionDto, UpdatePromotionDto, ValidatePromoDto, CashLogDto,
+  CreateUserDto, UpdateUserDto, SystemSettingsDto,
 } from './dto/admin.dto';
 
 @SkipThrottle({ auth: true, order: true })
@@ -180,6 +181,50 @@ export class AdminController {
     return this.adminService.removeStaff(user, vendorId, userId);
   }
 
+  @Post('vendors/:id/staff')
+  @Roles('super_admin', 'admin')
+  createStaffForVendor(@CurrentUser() user: JwtUser, @Param('id') id: string, @Body() dto: CreateStaffDto) {
+    return this.adminService.createStaffForVendor(user, id, dto);
+  }
+
+  @Get('vendors/:id/detail')
+  @Roles('super_admin', 'admin')
+  getVendorDetail(@Param('id') id: string) {
+    return this.adminService.getVendorDetail(id);
+  }
+
+  // ── User Management ───────────────────────────────────────────────────────
+  @Get('users')
+  @Roles('super_admin', 'admin')
+  getUsers(@Query('role') role?: string, @Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.adminService.getUsers(role, page ? +page : 1, limit ? +limit : 20);
+  }
+
+  @Post('users')
+  @Roles('super_admin', 'admin')
+  createUser(@CurrentUser() user: JwtUser, @Body() dto: CreateUserDto) {
+    return this.adminService.createUser(user, dto);
+  }
+
+  @Put('users/:id')
+  @Roles('super_admin', 'admin')
+  updateUser(@CurrentUser() user: JwtUser, @Param('id') id: string, @Body() dto: UpdateUserDto) {
+    return this.adminService.updateUser(user, id, dto);
+  }
+
+  // ── System Settings ───────────────────────────────────────────────────────
+  @Get('settings')
+  @Roles('super_admin', 'admin')
+  getSystemSettings() {
+    return this.adminService.getSystemSettings();
+  }
+
+  @Put('settings')
+  @Roles('super_admin')
+  updateSystemSettings(@CurrentUser() user: JwtUser, @Body() dto: SystemSettingsDto) {
+    return this.adminService.updateSystemSettings(user, dto);
+  }
+
   // ── Finance ───────────────────────────────────────────────────────────────
   @Get('finance/daily')
   @Roles('super_admin', 'admin')
@@ -199,8 +244,10 @@ export class AdminController {
     @Query('date') date?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
   ) {
-    return this.adminService.getCashLog(date, page ? +page : 1, limit ? +limit : 20);
+    return this.adminService.getCashLog(date, page ? +page : 1, limit ? +limit : 20, from, to);
   }
 
   @Post('finance/cash-log')

@@ -19,6 +19,7 @@ function useClock() {
 export default function DisplayBoardPage() {
   const [vendors, setVendors] = useState<DisplayBoardVendor[]>([]);
   const [offline, setOffline] = useState(false);
+  const [vendorFilter, setVendorFilter] = useState<string | null>(null);
   const clock = useClock();
 
   async function fetchBoard() {
@@ -39,7 +40,9 @@ export default function DisplayBoardPage() {
     return () => { clearInterval(interval); clearTimeout(reload); };
   }, []);
 
-  const hasAny = vendors.some((v) => v.preparing.length > 0 || v.ready.length > 0);
+  const activeVendors = vendors.filter((v) => v.preparing.length > 0 || v.ready.length > 0);
+  const displayVendors = vendorFilter ? activeVendors.filter((v) => v.vendor_id === vendorFilter) : activeVendors;
+  const hasAny = activeVendors.length > 0;
 
   return (
     <div className="min-h-screen bg-brand-bg flex flex-col overflow-hidden">
@@ -63,6 +66,30 @@ export default function DisplayBoardPage() {
           </p>
         </div>
       </header>
+
+      {/* Vendor filter chips */}
+      {activeVendors.length > 1 && (
+        <div className="flex gap-2 px-10 pt-4 pb-0 flex-wrap">
+          <button
+            onClick={() => setVendorFilter(null)}
+            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${!vendorFilter ? 'bg-brand-orange text-white' : 'bg-white/5 text-brand-dim hover:text-brand-white'}`}
+          >
+            All
+          </button>
+          {activeVendors.map((v) => (
+            <button
+              key={v.vendor_id}
+              onClick={() => setVendorFilter(v.vendor_id === vendorFilter ? null : v.vendor_id)}
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all`}
+              style={vendorFilter === v.vendor_id
+                ? { backgroundColor: v.booth_color, color: '#fff' }
+                : { backgroundColor: `${v.booth_color}22`, color: v.booth_color }}
+            >
+              {v.vendor_name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Column headers */}
       <div className="grid grid-cols-2 gap-0 px-10 pt-6 pb-2">
@@ -91,9 +118,7 @@ export default function DisplayBoardPage() {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto px-10 py-4 space-y-6">
-          {vendors
-            .filter((v) => v.preparing.length > 0 || v.ready.length > 0)
-            .map((vendor) => (
+          {displayVendors.map((vendor) => (
               <div key={vendor.vendor_id}>
                 {/* Vendor header */}
                 <div

@@ -109,6 +109,7 @@ class CreateCategoryDto {
 exports.CreateCategoryDto = CreateCategoryDto;
 __decorate([
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateCategoryDto.prototype, "name", void 0);
 __decorate([
@@ -223,6 +224,11 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Object)
 ], UpdateVendorSettingsDto.prototype, "notification_preferences", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateVendorSettingsDto.prototype, "logo_url", void 0);
 class UpdateVendorStatusDto {
 }
 exports.UpdateVendorStatusDto = UpdateVendorStatusDto;

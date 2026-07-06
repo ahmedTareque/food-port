@@ -1,5 +1,6 @@
 'use client';
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { Toast } from '@/types';
 
 interface UIStore {
@@ -12,23 +13,31 @@ interface UIStore {
   setKDSVolume: (v: number) => void;
 }
 
-export const useUIStore = create<UIStore>((set) => ({
-  toasts: [],
+export const useUIStore = create<UIStore>()(
+  persist(
+    (set) => ({
+      toasts: [],
 
-  addToast: (toast) => {
-    const id = crypto.randomUUID();
-    set((state) => ({ toasts: [...state.toasts, { ...toast, id }] }));
-    setTimeout(() => {
-      set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }));
-    }, 4000);
-  },
+      addToast: (toast) => {
+        const id = crypto.randomUUID();
+        set((state) => ({ toasts: [...state.toasts, { ...toast, id }] }));
+        setTimeout(() => {
+          set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }));
+        }, 4000);
+      },
 
-  removeToast: (id) =>
-    set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
+      removeToast: (id) =>
+        set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
 
-  isKDSMuted: false,
-  toggleKDSMute: () => set((state) => ({ isKDSMuted: !state.isKDSMuted })),
+      isKDSMuted: false,
+      toggleKDSMute: () => set((state) => ({ isKDSMuted: !state.isKDSMuted })),
 
-  kdsVolume: 0.7,
-  setKDSVolume: (v) => set({ kdsVolume: v }),
-}));
+      kdsVolume: 0.7,
+      setKDSVolume: (v) => set({ kdsVolume: v }),
+    }),
+    {
+      name: 'ui-prefs',
+      partialize: (state) => ({ isKDSMuted: state.isKDSMuted, kdsVolume: state.kdsVolume }),
+    }
+  )
+);

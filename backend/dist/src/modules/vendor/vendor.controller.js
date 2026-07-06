@@ -26,14 +26,17 @@ let VendorController = class VendorController {
     constructor(vendorService) {
         this.vendorService = vendorService;
     }
+    getWeeklyRevenue(user) {
+        return this.vendorService.getWeeklyRevenue(user);
+    }
     getDashboard(user) {
         return this.vendorService.getDashboard(user);
     }
     getOrders(user, from, to, status, page, limit) {
         return this.vendorService.getOrders(user, from, to, status, page ? +page : 1, limit ? +limit : 20);
     }
-    getOrder(orderId) {
-        return { orderId };
+    getOrder(user, orderId) {
+        return this.vendorService.getOrderDetail(user, orderId);
     }
     getMenu(user) {
         return this.vendorService.getMenu(user);
@@ -51,6 +54,9 @@ let VendorController = class VendorController {
     deleteMenuItem(user, id) {
         return this.vendorService.deleteMenuItem(user, id);
     }
+    duplicateMenuItem(user, id) {
+        return this.vendorService.duplicateMenuItem(user, id);
+    }
     updateAvailability(user, id, dto) {
         return this.vendorService.updateAvailability(user, id, dto);
     }
@@ -62,6 +68,12 @@ let VendorController = class VendorController {
     }
     updateCategory(user, id, dto) {
         return this.vendorService.updateCategory(user, id, dto);
+    }
+    deleteCategory(user, id) {
+        return this.vendorService.deleteCategory(user, id);
+    }
+    bulkCategoryAvailability(user, id, is_available) {
+        return this.vendorService.bulkSetCategoryAvailability(user, id, is_available);
     }
     createModifierGroup(user, dto) {
         return this.vendorService.createModifierGroup(user, dto);
@@ -93,8 +105,39 @@ let VendorController = class VendorController {
     updateStatus(user, dto) {
         return this.vendorService.updateStatus(user, dto);
     }
+    listStaffPins(user) {
+        return this.vendorService.listStaffPins(user);
+    }
+    createStaffPin(user, label, pin) {
+        return this.vendorService.createStaffPin(user, label, pin);
+    }
+    toggleStaffPin(user, id, is_active) {
+        return this.vendorService.toggleStaffPin(user, id, is_active);
+    }
+    deleteStaffPin(user, id) {
+        return this.vendorService.deleteStaffPin(user, id);
+    }
+    getPayoutSummary(user) {
+        return this.vendorService.getPayoutSummary(user);
+    }
+    getSalesReport(user, from, to) {
+        return this.vendorService.getSalesReport(user, from, to);
+    }
+    getTopItemsReport(user, from, to, limit) {
+        return this.vendorService.getTopItemsReport(user, from, to, limit ? parseInt(limit) : 10);
+    }
+    getPeakHoursReport(user, from, to) {
+        return this.vendorService.getPeakHoursReport(user, from, to);
+    }
 };
 exports.VendorController = VendorController;
+__decorate([
+    (0, common_1.Get)('revenue/weekly'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], VendorController.prototype, "getWeeklyRevenue", null);
 __decorate([
     (0, common_1.Get)('dashboard'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
@@ -116,9 +159,10 @@ __decorate([
 ], VendorController.prototype, "getOrders", null);
 __decorate([
     (0, common_1.Get)('orders/:orderId'),
-    __param(0, (0, common_1.Param)('orderId')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('orderId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], VendorController.prototype, "getOrder", null);
 __decorate([
@@ -166,6 +210,15 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], VendorController.prototype, "deleteMenuItem", null);
 __decorate([
+    (0, common_1.Post)('menu-items/:id/duplicate'),
+    (0, roles_decorator_1.Roles)('vendor_owner', 'admin'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], VendorController.prototype, "duplicateMenuItem", null);
+__decorate([
     (0, common_1.Patch)('menu-items/:id/availability'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id')),
@@ -200,6 +253,25 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, create_menu_item_dto_1.UpdateCategoryDto]),
     __metadata("design:returntype", void 0)
 ], VendorController.prototype, "updateCategory", null);
+__decorate([
+    (0, common_1.Delete)('categories/:id'),
+    (0, roles_decorator_1.Roles)('vendor_owner', 'admin'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], VendorController.prototype, "deleteCategory", null);
+__decorate([
+    (0, common_1.Patch)('categories/:id/bulk-availability'),
+    (0, roles_decorator_1.Roles)('vendor_owner', 'admin'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)('is_available')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Boolean]),
+    __metadata("design:returntype", void 0)
+], VendorController.prototype, "bulkCategoryAvailability", null);
 __decorate([
     (0, common_1.Post)('modifier-groups'),
     (0, roles_decorator_1.Roles)('vendor_owner', 'admin'),
@@ -292,6 +364,78 @@ __decorate([
     __metadata("design:paramtypes", [Object, create_menu_item_dto_1.UpdateVendorStatusDto]),
     __metadata("design:returntype", void 0)
 ], VendorController.prototype, "updateStatus", null);
+__decorate([
+    (0, common_1.Get)('staff-pins'),
+    (0, roles_decorator_1.Roles)('vendor_owner', 'admin'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], VendorController.prototype, "listStaffPins", null);
+__decorate([
+    (0, common_1.Post)('staff-pins'),
+    (0, roles_decorator_1.Roles)('vendor_owner', 'admin'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)('label')),
+    __param(2, (0, common_1.Body)('pin')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String]),
+    __metadata("design:returntype", void 0)
+], VendorController.prototype, "createStaffPin", null);
+__decorate([
+    (0, common_1.Patch)('staff-pins/:id/toggle'),
+    (0, roles_decorator_1.Roles)('vendor_owner', 'admin'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)('is_active')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Boolean]),
+    __metadata("design:returntype", void 0)
+], VendorController.prototype, "toggleStaffPin", null);
+__decorate([
+    (0, common_1.Delete)('staff-pins/:id'),
+    (0, roles_decorator_1.Roles)('vendor_owner', 'admin'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], VendorController.prototype, "deleteStaffPin", null);
+__decorate([
+    (0, common_1.Get)('payout/summary'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], VendorController.prototype, "getPayoutSummary", null);
+__decorate([
+    (0, common_1.Get)('reports/sales'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('from')),
+    __param(2, (0, common_1.Query)('to')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String]),
+    __metadata("design:returntype", void 0)
+], VendorController.prototype, "getSalesReport", null);
+__decorate([
+    (0, common_1.Get)('reports/top-items'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('from')),
+    __param(2, (0, common_1.Query)('to')),
+    __param(3, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String, String]),
+    __metadata("design:returntype", void 0)
+], VendorController.prototype, "getTopItemsReport", null);
+__decorate([
+    (0, common_1.Get)('reports/peak-hours'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('from')),
+    __param(2, (0, common_1.Query)('to')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String]),
+    __metadata("design:returntype", void 0)
+], VendorController.prototype, "getPeakHoursReport", null);
 exports.VendorController = VendorController = __decorate([
     (0, throttler_1.SkipThrottle)({ auth: true, order: true }),
     (0, swagger_1.ApiTags)('Vendor'),

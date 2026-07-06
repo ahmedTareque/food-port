@@ -1,8 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { apiFetchPaginated } from '@/lib/api';
+import { apiFetch, apiFetchPaginated } from '@/lib/api';
 import Spinner from '@/components/ui/Spinner';
 import GlassCard from '@/components/ui/GlassCard';
+import Modal from '@/components/ui/Modal';
 
 interface VendorOrder {
   id: string;
@@ -12,6 +13,26 @@ interface VendorOrder {
   total: number;
   status: string;
   created_at: string;
+}
+
+interface OrderDetail {
+  id: string;
+  token_number: number;
+  table_number: string | null;
+  status: string;
+  created_at: string;
+  special_notes: string | null;
+  total: number;
+  items: {
+    id: string;
+    item_name: string;
+    quantity: number;
+    base_price: number;
+    total_price: number;
+    status: string;
+    special_instructions: string | null;
+    modifiers: { name: string; price: number }[];
+  }[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -29,6 +50,9 @@ export default function OrderHistoryPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [statusFilter, setStatusFilter] = useState('');
+  const [tokenSearch, setTokenSearch] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState<OrderDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
   const LIMIT = 20;
 
   useEffect(() => {
@@ -44,9 +68,76 @@ export default function OrderHistoryPage() {
       .finally(() => setLoading(false));
   }, [page, statusFilter]);
 
+  async function openOrder(orderId: string) {
+    setDetailLoading(true);
+    try {
+      const detail = await apiFetch<OrderDetail>(`/vendor/orders/${orderId}`);
+      setSelectedOrder(detail);
+    } catch {} finally {
+      setDetailLoading(false);
+    }
+  }
+
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <h1 className="font-heading text-4xl text-brand-white tracking-widest mb-5">ORDER HISTORY</h1>
+
+      {/* Order detail modal */}
+      <Modal isOpen={!!selectedOrder} onClose={() => setSelectedOrder(null)} title={selectedOrder ? `Order #${String(selectedOrder.token_number).padStart(3, '0')}` : ''}>
+        {selectedOrder && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 text-sm">
+              <span className="text-brand-dim">Table:</span>
+              <span className="text-brand-chrome">{selectedOrder.table_number ?? '—'}</span>
+              <span className="text-brand-dim">Status:</span>
+              <span className="font-semibold capitalize" style={{ color: STATUS_COLORS[selectedOrder.status] ?? '#888' }}>{selectedOrder.status}</span>
+              <span className="text-brand-dim ml-auto font-mono text-xs">{new Date(selectedOrder.created_at).toLocaleString()}</span>
+            </div>
+            {selectedOrder.special_notes && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-2 text-xs text-amber-300">
+                Note: {selectedOrder.special_notes}
+              </div>
+            )}
+            <div className="space-y-2">
+              {selectedOrder.items.map((item) => (
+                <div key={item.id} className="glass rounded-xl px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-heading text-brand-white">{item.quantity}× {item.item_name}</p>
+                      {item.modifiers.length > 0 && (
+                        <p className="text-xs text-brand-dim mt-0.5">
+                          {item.modifiers.map((m) => m.name).join(', ')}
+                        </p>
+                      )}
+                      {item.special_instructions && (
+                        <p className="text-xs text-amber-300 mt-0.5">"{item.special_instructions}"</p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono text-brand-orange">${item.total_price.toFixed(2)}</p>
+                      <p className="text-xs text-brand-dim capitalize">{item.status}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between pt-3 border-t border-white/10">
+              <span className="font-heading text-brand-dim">TOTAL</span>
+              <span className="font-heading text-xl text-brand-orange">${selectedOrder.total.toFixed(2)}</span>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Token search */}
+      <div className="mb-3">
+        <input
+          value={tokenSearch}
+          onChange={(e) => setTokenSearch(e.target.value)}
+          placeholder="Search by token # (e.g. 42)…"
+          className="bg-brand-bg border border-white/10 rounded-xl px-4 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 w-full max-w-xs"
+        />
+      </div>
 
       {/* Filter */}
       <div className="flex gap-2 mb-5 flex-wrap">
@@ -82,8 +173,8 @@ export default function OrderHistoryPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/4">
-                {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-white/2 transition-colors">
+                {orders.filter((o) => !tokenSearch || String(o.token_number).includes(tokenSearch)).map((order) => (
+                  <tr key={order.id} className="hover:bg-white/2 transition-colors cursor-pointer" onClick={() => openOrder(order.id)}>
                     <td className="px-4 py-3 font-heading text-xl text-brand-orange">
                       #{String(order.token_number).padStart(3, '0')}
                     </td>

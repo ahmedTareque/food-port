@@ -63,6 +63,7 @@ export declare class UpdateVendorSettingsDto {
         new_order_sound?: boolean;
         volume?: number;
     };
+    logo_url?: string;
 }
 export declare class UpdateVendorStatusDto {
     is_accepting_orders: boolean;

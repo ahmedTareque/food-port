@@ -14,6 +14,12 @@ function WelcomeContent() {
   const [loading, setLoading] = useState(false);
 
   const tableId = searchParams.get('table') ?? '1';
+  const autoStart = searchParams.get('autostart') === '1';
+
+  useEffect(() => {
+    if (autoStart) handleStart();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleStart() {
     setLoading(true);
@@ -101,7 +107,11 @@ function WelcomeContent() {
           transition={{ delay: 0.65, duration: 0.4 }}
           className="mt-6 text-xs text-brand-dim font-mono"
         >
-          Table {tableId}
+          {searchParams.get('table') ? (
+            <span className="text-brand-orange font-semibold">Table {tableId}</span>
+          ) : (
+            'Walk-up order'
+          )}
         </motion.p>
       </motion.div>
     </div>

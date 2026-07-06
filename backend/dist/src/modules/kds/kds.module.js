@@ -10,6 +10,7 @@ exports.KdsModule = void 0;
 const common_1 = require("@nestjs/common");
 const kds_controller_1 = require("./kds.controller");
 const kds_service_1 = require("./kds.service");
+const kds_gateway_1 = require("./kds.gateway");
 const prisma_service_1 = require("../../database/prisma.service");
 const orders_module_1 = require("../orders/orders.module");
 let KdsModule = class KdsModule {
@@ -19,7 +20,8 @@ exports.KdsModule = KdsModule = __decorate([
     (0, common_1.Module)({
         imports: [orders_module_1.OrdersModule],
         controllers: [kds_controller_1.KdsController],
-        providers: [kds_service_1.KdsService, prisma_service_1.PrismaService],
+        providers: [kds_service_1.KdsService, kds_gateway_1.KdsGateway, prisma_service_1.PrismaService],
+        exports: [kds_gateway_1.KdsGateway],
     })
 ], KdsModule);
 //# sourceMappingURL=kds.module.js.map

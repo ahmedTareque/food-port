@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, SetMetadata } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, SetMetadata } from '@nestjs/common';
 import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import { MenuService } from './menu.service';
@@ -39,5 +39,11 @@ export class MenuController {
   @Get('menu-items/:itemId')
   getMenuItemDetail(@Param('itemId') itemId: string) {
     return this.menuService.getMenuItemDetail(itemId);
+  }
+
+  @Public()
+  @Post('promos/validate')
+  validatePromo(@Body() body: { code: string; subtotal: number }) {
+    return this.menuService.validatePromoCode(body.code, body.subtotal);
   }
 }

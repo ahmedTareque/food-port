@@ -4,11 +4,20 @@ import { CreateMenuItemDto, UpdateMenuItemDto, UpdateAvailabilityDto, CreateCate
 export declare class VendorController {
     private vendorService;
     constructor(vendorService: VendorService);
+    getWeeklyRevenue(user: JwtUser): Promise<{
+        days: {
+            date: string;
+            revenue: number;
+            orders: number;
+        }[];
+    }>;
     getDashboard(user: JwtUser): Promise<{
         orders_today: number;
         revenue_today: number;
         active_queue: number;
         avg_prep_time: number;
+        avg_rating: number | null;
+        rating_count: number;
         top_items: {
             name: string;
             count: number;
@@ -40,9 +49,28 @@ export declare class VendorController {
             has_prev: boolean;
         };
     }>;
-    getOrder(orderId: string): {
-        orderId: string;
-    };
+    getOrder(user: JwtUser, orderId: string): Promise<{
+        id: string;
+        token_number: number;
+        table_number: number;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        created_at: string;
+        special_notes: string | null;
+        items: {
+            id: string;
+            item_name: string;
+            quantity: number;
+            base_price: number;
+            total_price: number;
+            status: import(".prisma/client").$Enums.OrderItemStatus;
+            special_instructions: string | null;
+            modifiers: {
+                name: string;
+                price: number;
+            }[];
+        }[];
+        total: number;
+    }>;
     getMenu(user: JwtUser): Promise<{
         vendor: {
             id: string;
@@ -208,6 +236,10 @@ export declare class VendorController {
     deleteMenuItem(user: JwtUser, id: string): Promise<{
         success: boolean;
     }>;
+    duplicateMenuItem(user: JwtUser, id: string): Promise<{
+        id: string;
+        name: string;
+    }>;
     updateAvailability(user: JwtUser, id: string, dto: UpdateAvailabilityDto): Promise<{
         id: string;
         vendor_id: string;
@@ -252,6 +284,13 @@ export declare class VendorController {
         name: string;
         slug: string;
         sort_order: number;
+    }>;
+    deleteCategory(user: JwtUser, id: string): Promise<{
+        deleted: boolean;
+    }>;
+    bulkCategoryAvailability(user: JwtUser, id: string, is_available: boolean): Promise<{
+        updated: number;
+        is_available: boolean;
     }>;
     createModifierGroup(user: JwtUser, dto: CreateModifierGroupDto): Promise<{
         modifiers: {
@@ -350,4 +389,60 @@ export declare class VendorController {
         is_accepting_orders: boolean;
         status: import(".prisma/client").$Enums.VendorStatus;
     }>;
+    listStaffPins(user: JwtUser): Promise<{
+        role: import(".prisma/client").$Enums.UserRole;
+        id: string;
+        is_active: boolean;
+        created_at: Date;
+        label: string;
+    }[]>;
+    createStaffPin(user: JwtUser, label: string, pin: string): Promise<{
+        role: import(".prisma/client").$Enums.UserRole;
+        id: string;
+        is_active: boolean;
+        created_at: Date;
+        label: string;
+    }>;
+    toggleStaffPin(user: JwtUser, id: string, is_active: boolean): Promise<{
+        id: string;
+        is_active: boolean;
+    }>;
+    deleteStaffPin(user: JwtUser, id: string): Promise<{
+        deleted: boolean;
+    }>;
+    getPayoutSummary(user: JwtUser): Promise<{
+        revenue_this_month: number;
+        deductions_this_month: number;
+        net_this_month: number;
+        all_time_revenue: number;
+        transactions: {
+            id: string;
+            type: string;
+            month: string;
+            amount: number | null;
+            is_paid: boolean;
+            due_date: string | undefined;
+            paid_at: string | undefined;
+            notes: string | null;
+        }[];
+    }>;
+    getSalesReport(user: JwtUser, from?: string, to?: string): Promise<{
+        days: {
+            revenue: number;
+            date: string;
+            orders: number;
+        }[];
+        total_revenue: number;
+        total_orders: number;
+    }>;
+    getTopItemsReport(user: JwtUser, from?: string, to?: string, limit?: string): Promise<{
+        revenue: number;
+        item_name: string;
+        count: number;
+    }[]>;
+    getPeakHoursReport(user: JwtUser, from?: string, to?: string): Promise<{
+        day_of_week: number;
+        hour: number;
+        count: number;
+    }[]>;
 }

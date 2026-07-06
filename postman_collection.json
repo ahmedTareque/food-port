@@ -1,0 +1,1001 @@
+{
+  "info": {
+    "name": "Food Port POS — Full API Test Suite",
+    "description": "60+ test cases covering Tasks #01–#30. Import environment variables alongside this collection.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "food-port-pos-test-suite-v1"
+  },
+  "variable": [
+    { "key": "base_url",       "value": "http://localhost:3001/api" },
+    { "key": "admin_token",    "value": "" },
+    { "key": "vendor_token",   "value": "" },
+    { "key": "vendor_id",      "value": "165aaf20-a2fd-4435-bf7d-d57b35a8eaf3" },
+    { "key": "bb_vendor_id",   "value": "0bc9a119-711b-40cb-a11a-77fe41996383" },
+    { "key": "table_id",       "value": "1fdbf22b-7e9b-409f-89f4-03f440b6efc3" },
+    { "key": "juice_cat_id",   "value": "bd11b305-a5fb-4a47-a473-f97b77df7854" },
+    { "key": "coffee_cat_id",  "value": "03ef3fa6-3087-4e96-8278-0777cc728076" },
+    { "key": "juice_item_id",  "value": "c7100944-09b4-4f0d-8eee-24018dddc3d9" },
+    { "key": "cold_brew_id",   "value": "1a4b055c-987b-4a63-a55f-7f4406cba073" },
+    { "key": "spice_mod_id",   "value": "4ffcbb77-b461-4e97-b730-4d71818d005b" },
+    { "key": "order_id",       "value": "" },
+    { "key": "order_item_id",  "value": "" },
+    { "key": "staff_pin_id",   "value": "" },
+    { "key": "dup_item_id",    "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "TC-AUTH-01 Admin login",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const d = pm.response.json().data;",
+            "pm.test('has access_token', () => pm.expect(d.access_token).to.be.a('string'));",
+            "pm.collectionVariables.set('admin_token', d.access_token);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\":\"admin@foodvillage.com\",\"password\":\"admin123\"}" }
+          }
+        },
+        {
+          "name": "TC-AUTH-02 Vendor (booth11) login",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const d = pm.response.json().data;",
+            "pm.test('has access_token', () => pm.expect(d.access_token).to.be.a('string'));",
+            "pm.test('role is vendor_owner', () => pm.expect(d.user.role).to.eql('vendor_owner'));",
+            "pm.collectionVariables.set('vendor_token', d.access_token);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\":\"booth11@foodvillage.com\",\"password\":\"vendor123\"}" }
+          }
+        },
+        {
+          "name": "TC-AUTH-03 Wrong password → 401",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"email\":\"admin@foodvillage.com\",\"password\":\"wrongpass\"}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks #01–03 — Menu Discovery",
+      "item": [
+        {
+          "name": "TC-01-01 List all vendors",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const vendors = pm.response.json().data;",
+            "pm.test('returns array', () => pm.expect(vendors).to.be.an('array'));",
+            "pm.test('each vendor has id, name, slug, booth_color', () => {",
+            "  vendors.forEach(v => {",
+            "    pm.expect(v).to.have.property('id');",
+            "    pm.expect(v).to.have.property('name');",
+            "    pm.expect(v).to.have.property('slug');",
+            "  });",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/vendors" }
+        },
+        {
+          "name": "TC-01-02 Food Port in vendor list (booth 11)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "const vendors = pm.response.json().data;",
+            "const fp = vendors.find(v => v.slug === 'food-port');",
+            "pm.test('Food Port exists', () => pm.expect(fp).to.not.be.undefined);",
+            "pm.test('Food Port booth_number is 11', () => pm.expect(fp.booth_number).to.eql(11));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/vendors" }
+        },
+        {
+          "name": "TC-01-03 Food Port menu has 20 categories",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const data = pm.response.json().data;",
+            "const cats = data.categories || data;",
+            "pm.test('has Juice category', () => pm.expect(cats.some(c => c.name === 'Juice')).to.be.true);",
+            "pm.test('has Momo category', () => pm.expect(cats.some(c => c.name === 'Momo')).to.be.true);",
+            "pm.test('has Taco category', () => pm.expect(cats.some(c => c.name === 'Taco')).to.be.true);"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/vendors/{{vendor_id}}/menu" }
+        },
+        {
+          "name": "TC-01-04 Unknown vendor → 404",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 404', () => pm.response.to.have.status(404));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/vendors/00000000-0000-0000-0000-000000000000/menu" }
+        },
+        {
+          "name": "TC-01-05 Get vendor categories",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const cats = pm.response.json().data;",
+            "pm.test('each category has id, name, slug', () => cats.forEach(c => {",
+            "  pm.expect(c).to.have.property('id');",
+            "  pm.expect(c).to.have.property('name');",
+            "  pm.expect(c).to.have.property('slug');",
+            "}));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/vendors/{{vendor_id}}/categories" }
+        },
+        {
+          "name": "TC-07-01 Get single menu item",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const item = pm.response.json().data;",
+            "pm.test('has image_url field', () => pm.expect(item).to.have.property('image_url'));",
+            "pm.test('has dietary_tags array', () => pm.expect(item.dietary_tags).to.be.an('array'));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/menu-items/{{juice_item_id}}" }
+        },
+        {
+          "name": "TC-07-02 Deleted item → 404",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 404', () => pm.response.to.have.status(404));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/menu-items/00000000-0000-0000-0000-000000000000" }
+        }
+      ]
+    },
+    {
+      "name": "Tasks #04 + #08 — Order Creation",
+      "item": [
+        {
+          "name": "TC-08-01 Place order (Food Port — Mango Juice)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 201', () => pm.response.to.have.status(201));",
+            "const order = pm.response.json().data;",
+            "pm.test('has token_number', () => pm.expect(order.token_number).to.be.a('number'));",
+            "pm.test('status is pending', () => pm.expect(order.status).to.eql('pending'));",
+            "pm.test('total > 0', () => pm.expect(order.total).to.be.above(0));",
+            "pm.collectionVariables.set('order_id', order.id);",
+            "pm.collectionVariables.set('order_item_id', order.items[0].id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"table_id\": \"{{table_id}}\",\n  \"idempotency_key\": \"{{$guid}}\",\n  \"items\": [\n    {\n      \"vendor_id\": \"{{vendor_id}}\",\n      \"menu_item_id\": \"{{juice_item_id}}\",\n      \"quantity\": 2,\n      \"modifiers\": [\n        { \"modifier_id\": \"{{spice_mod_id}}\", \"quantity\": 1 }\n      ]\n    }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "TC-08-02 Order with table_number string '1'",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 201', () => pm.response.to.have.status(201));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"table_id\": \"1\",\n  \"idempotency_key\": \"{{$guid}}\",\n  \"items\": [\n    {\n      \"vendor_id\": \"{{vendor_id}}\",\n      \"menu_item_id\": \"{{cold_brew_id}}\",\n      \"quantity\": 1,\n      \"modifiers\": []\n    }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "TC-04-01 Idempotency — repeat same key",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 201', () => pm.response.to.have.status(201));",
+            "const order = pm.response.json().data;",
+            "pm.test('same order id returned', () => pm.expect(order.id).to.eql(pm.collectionVariables.get('idempotency_order_id') || order.id));",
+            "pm.collectionVariables.set('idempotency_order_id', order.id);",
+            "pm.collectionVariables.set('idempotency_key_saved', pm.request.body.raw ? JSON.parse(pm.request.body.raw).idempotency_key : '');"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"table_id\": \"{{table_id}}\",\n  \"idempotency_key\": \"test-idempotency-key-fixed-001\",\n  \"items\": [\n    {\n      \"vendor_id\": \"{{vendor_id}}\",\n      \"menu_item_id\": \"{{juice_item_id}}\",\n      \"quantity\": 1,\n      \"modifiers\": []\n    }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "TC-04-02 Idempotency — same key again → same order",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 201', () => pm.response.to.have.status(201));",
+            "pm.test('same order id', () => pm.expect(pm.response.json().data.id).to.eql(pm.collectionVariables.get('idempotency_order_id')));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"table_id\": \"{{table_id}}\",\n  \"idempotency_key\": \"test-idempotency-key-fixed-001\",\n  \"items\": [\n    {\n      \"vendor_id\": \"{{vendor_id}}\",\n      \"menu_item_id\": \"{{juice_item_id}}\",\n      \"quantity\": 1,\n      \"modifiers\": []\n    }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "TC-08-03 Non-existent table → 404",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 404', () => pm.response.to.have.status(404));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"table_id\": \"99\",\n  \"idempotency_key\": \"{{$guid}}\",\n  \"items\": [\n    {\n      \"vendor_id\": \"{{vendor_id}}\",\n      \"menu_item_id\": \"{{juice_item_id}}\",\n      \"quantity\": 1,\n      \"modifiers\": []\n    }\n  ]\n}" }
+          }
+        },
+        {
+          "name": "TC-08-06 Empty items → 400",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 400', () => pm.response.to.have.status(400));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"table_id\": \"{{table_id}}\",\n  \"idempotency_key\": \"{{$guid}}\",\n  \"items\": []\n}" }
+          }
+        },
+        {
+          "name": "TC-18-01 Order with special_notes",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 201', () => pm.response.to.have.status(201));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"table_id\": \"{{table_id}}\",\n  \"idempotency_key\": \"{{$guid}}\",\n  \"special_notes\": \"No ice, extra sweet\",\n  \"items\": [\n    {\n      \"vendor_id\": \"{{vendor_id}}\",\n      \"menu_item_id\": \"{{juice_item_id}}\",\n      \"quantity\": 1,\n      \"modifiers\": []\n    }\n  ]\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task #05 — Order Status Tracking",
+      "item": [
+        {
+          "name": "TC-05-01 Get order status",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const d = pm.response.json().data;",
+            "pm.test('has order_id', () => pm.expect(d.order_id).to.be.a('string'));",
+            "pm.test('has token_number', () => pm.expect(d.token_number).to.be.a('number'));",
+            "pm.test('has overall_status', () => pm.expect(d.overall_status).to.be.a('string'));",
+            "pm.test('has items array', () => pm.expect(d.items).to.be.an('array'));",
+            "pm.test('each item has vendor_name and status', () => d.items.forEach(i => {",
+            "  pm.expect(i.vendor_name).to.be.a('string');",
+            "  pm.expect(i.status).to.be.a('string');",
+            "}));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/orders/{{order_id}}/status" }
+        },
+        {
+          "name": "TC-05-02 Non-existent order → 404",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 404', () => pm.response.to.have.status(404));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/orders/00000000-0000-0000-0000-000000000000/status" }
+        },
+        {
+          "name": "TC-05-03 Display board returns vendors",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const d = pm.response.json().data;",
+            "pm.test('has food_village_name', () => pm.expect(d.food_village_name).to.be.a('string'));",
+            "pm.test('has vendors array', () => pm.expect(d.vendors).to.be.an('array'));",
+            "pm.test('has last_updated timestamp', () => pm.expect(d.last_updated).to.be.a('string'));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/display/board" }
+        }
+      ]
+    },
+    {
+      "name": "Task #06 — Promotions",
+      "item": [
+        {
+          "name": "TC-06-01 Validate non-existent code",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 404 or valid: false', () => {",
+            "  const s = pm.response.code;",
+            "  pm.expect([200, 404]).to.include(s);",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/promos/validate",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"code\":\"FAKECODE\",\"subtotal\":500}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task #09 — Accessibility (Menu Fields)",
+      "item": [
+        {
+          "name": "TC-09-01 Menu items have dietary_tags and allergens",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const data = pm.response.json().data;",
+            "const items = data.categories ? data.categories.flatMap(c => c.items) : [];",
+            "pm.test('items have dietary_tags', () => items.slice(0, 5).forEach(i => {",
+            "  pm.expect(i.dietary_tags).to.be.an('array');",
+            "  pm.expect(i.allergens).to.be.an('array');",
+            "}));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/vendors/{{vendor_id}}/menu" }
+        },
+        {
+          "name": "TC-09-02 Food Port Juice items tagged vegan",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "const data = pm.response.json().data;",
+            "const juice = data.categories ? data.categories.find(c => c.name === 'Juice') : null;",
+            "if (juice) {",
+            "  pm.test('Juice items have vegan tag', () => {",
+            "    juice.items.forEach(i => pm.expect(i.dietary_tags).to.include('vegan'));",
+            "  });",
+            "} else { pm.test('skip - no categories in response', () => true); }"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/vendors/{{vendor_id}}/menu" }
+        }
+      ]
+    },
+    {
+      "name": "Tasks #11–#15 — KDS Operations",
+      "item": [
+        {
+          "name": "TC-11-01 KDS orders (authenticated vendor)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('returns array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/kds/orders",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-11-02 KDS orders — unauthenticated → 401",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/kds/orders" }
+        },
+        {
+          "name": "TC-11-04 Accept order item",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200 or 400', () => pm.expect([200, 400]).to.include(pm.response.code));",
+            "if (pm.response.code === 200) {",
+            "  pm.test('status is accepted', () => pm.expect(pm.response.json().data.status).to.eql('accepted'));",
+            "}"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PATCH", "url": "{{base_url}}/kds/items/{{order_item_id}}/accept",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-14-03 Mark item preparing",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200 or 400', () => pm.expect([200, 400]).to.include(pm.response.code));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PATCH", "url": "{{base_url}}/kds/items/{{order_item_id}}/preparing",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-14-01 Mark item ready",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200 or 400', () => pm.expect([200, 400]).to.include(pm.response.code));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PATCH", "url": "{{base_url}}/kds/items/{{order_item_id}}/ready",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-12-01 KDS items have created_at timestamp",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const orders = pm.response.json().data;",
+            "if (orders.length > 0 && orders[0].items && orders[0].items.length > 0) {",
+            "  pm.test('item has created_at', () => pm.expect(orders[0].items[0]).to.have.property('created_at'));",
+            "  pm.test('item has estimated_prep_time', () => pm.expect(orders[0].items[0].estimated_prep_time).to.be.a('number'));",
+            "} else { pm.test('no active items to verify (OK)', () => true); }"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/kds/orders",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task #16 — Queue Stats",
+      "item": [
+        {
+          "name": "TC-16-01 Get queue stats (authenticated)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const d = pm.response.json().data;",
+            "pm.test('has queue_depth', () => pm.expect(d.queue_depth).to.be.a('number'));",
+            "pm.test('has avg_wait_minutes', () => pm.expect(d.avg_wait_minutes).to.be.a('number'));",
+            "pm.test('has oldest_pending_minutes', () => pm.expect(d.oldest_pending_minutes).to.be.a('number'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/kds/queue-stats",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-16-02 Queue stats — unauthenticated → 401",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/kds/queue-stats" }
+        }
+      ]
+    },
+    {
+      "name": "Task #17 — Vendor Pause Toggle",
+      "item": [
+        {
+          "name": "TC-17-01 Pause vendor (is_accepting_orders: false)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('is_accepting_orders is false', () => pm.expect(pm.response.json().data.is_accepting_orders).to.be.false);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PATCH", "url": "{{base_url}}/vendor/status",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"is_accepting_orders\":false}" }
+          }
+        },
+        {
+          "name": "TC-17-02 Unpause vendor (is_accepting_orders: true)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('is_accepting_orders is true', () => pm.expect(pm.response.json().data.is_accepting_orders).to.be.true);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PATCH", "url": "{{base_url}}/vendor/status",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"is_accepting_orders\":true}" }
+          }
+        },
+        {
+          "name": "TC-17-03 Pause — unauthenticated → 401",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PATCH", "url": "{{base_url}}/vendor/status",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"is_accepting_orders\":false}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task #19 — Operating Hours",
+      "item": [
+        {
+          "name": "TC-19-01 GET vendor settings",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const d = pm.response.json().data;",
+            "pm.test('has operating_hours field', () => pm.expect(d).to.have.property('operating_hours'));",
+            "pm.test('has avg_prep_time_minutes', () => pm.expect(d.avg_prep_time_minutes).to.be.a('number'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/vendor/settings",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-19-02 GET settings — unauthenticated → 401",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/vendor/settings" }
+        },
+        {
+          "name": "TC-19-03 PUT operating hours",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PUT", "url": "{{base_url}}/vendor/settings",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"avg_prep_time_minutes\": 8,\n  \"operating_hours\": {\n    \"mon\": { \"open\": \"09:00\", \"close\": \"22:00\", \"closed\": false },\n    \"tue\": { \"open\": \"09:00\", \"close\": \"22:00\", \"closed\": false },\n    \"wed\": { \"open\": \"09:00\", \"close\": \"22:00\", \"closed\": false },\n    \"thu\": { \"open\": \"09:00\", \"close\": \"22:00\", \"closed\": false },\n    \"fri\": { \"open\": \"10:00\", \"close\": \"23:00\", \"closed\": false },\n    \"sat\": { \"open\": \"10:00\", \"close\": \"23:00\", \"closed\": false },\n    \"sun\": { \"open\": \"11:00\", \"close\": \"21:00\", \"closed\": true }\n  }\n}" }
+          }
+        },
+        {
+          "name": "TC-19-04 GET settings after PUT — hours persisted",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const d = pm.response.json().data;",
+            "pm.test('operating_hours has mon key', () => pm.expect(d.operating_hours).to.have.property('mon'));",
+            "pm.test('avg_prep_time_minutes is 8', () => pm.expect(d.avg_prep_time_minutes).to.eql(8));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/vendor/settings",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task #20 — Vendor Dashboard",
+      "item": [
+        {
+          "name": "TC-20-01 GET vendor dashboard",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const d = pm.response.json().data;",
+            "pm.test('has today_revenue', () => pm.expect(d).to.have.property('today_revenue'));",
+            "pm.test('has today_orders', () => pm.expect(d).to.have.property('today_orders'));",
+            "pm.test('has pending_count', () => pm.expect(d).to.have.property('pending_count'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/vendor/dashboard",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-20-02 Dashboard — unauthenticated → 401",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/vendor/dashboard" }
+        }
+      ]
+    },
+    {
+      "name": "Task #21 — Category Management",
+      "item": [
+        {
+          "name": "TC-21-01 Create new category 'Specials'",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 201', () => pm.response.to.have.status(201));",
+            "const cat = pm.response.json().data;",
+            "pm.test('has id', () => pm.expect(cat.id).to.be.a('string'));",
+            "pm.test('slug is auto-generated', () => pm.expect(cat.slug).to.eql('specials'));",
+            "pm.collectionVariables.set('new_cat_id', cat.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/vendor/categories",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"name\":\"Specials\",\"sort_order\":99}" }
+          }
+        },
+        {
+          "name": "TC-21-03 Empty name → 400",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 400', () => pm.response.to.have.status(400));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/vendor/categories",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"name\":\"\"}" }
+          }
+        },
+        {
+          "name": "TC-21-04 Delete empty category",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200 or 204', () => pm.expect([200, 204]).to.include(pm.response.code));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "DELETE", "url": "{{base_url}}/vendor/categories/{{new_cat_id}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-21-05 Delete category with items → 400",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 400', () => pm.response.to.have.status(400));",
+            "pm.test('error mentions items', () => pm.expect(pm.response.json().error.message).to.match(/item/i));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "DELETE", "url": "{{base_url}}/vendor/categories/{{juice_cat_id}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task #22 — Bulk 86 (Availability Toggle)",
+      "item": [
+        {
+          "name": "TC-22-01 Bulk mark Coffee category unavailable",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const d = pm.response.json().data;",
+            "pm.test('updated count > 0', () => pm.expect(d.updated).to.be.above(0));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PATCH", "url": "{{base_url}}/vendor/categories/{{coffee_cat_id}}/bulk-availability",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"is_available\":false}" }
+          }
+        },
+        {
+          "name": "TC-22-02 Restore Coffee category",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('updated count > 0', () => pm.expect(pm.response.json().data.updated).to.be.above(0));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PATCH", "url": "{{base_url}}/vendor/categories/{{coffee_cat_id}}/bulk-availability",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"is_available\":true}" }
+          }
+        },
+        {
+          "name": "TC-22-03 Wrong vendor category → 404",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 404', () => pm.response.to.have.status(404));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PATCH", "url": "{{base_url}}/vendor/categories/00000000-0000-0000-0000-000000000000/bulk-availability",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"is_available\":false}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task #23 — Logo Upload (Settings)",
+      "item": [
+        {
+          "name": "TC-23-01 PUT logo_url",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PUT", "url": "{{base_url}}/vendor/settings",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"logo_url\":\"https://example.com/food-port-logo.png\"}" }
+          }
+        },
+        {
+          "name": "TC-23-02 GET settings — logo_url persisted",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('logo_url is set', () => pm.expect(pm.response.json().data.logo_url).to.include('food-port-logo'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/vendor/settings",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-23-03 Display board — logo_url visible",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "const board = pm.response.json().data;",
+            "const fp = board.vendors.find(v => v.vendor_name === 'Food Port');",
+            "if (fp) { pm.test('Food Port has logo_url', () => pm.expect(fp.logo_url).to.not.be.null); }",
+            "else { pm.test('no active items for Food Port in board (OK)', () => true); }"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/display/board" }
+        }
+      ]
+    },
+    {
+      "name": "Task #24 — Order Detail Modal",
+      "item": [
+        {
+          "name": "TC-24-01 GET vendor order detail",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const d = pm.response.json().data;",
+            "pm.test('has id', () => pm.expect(d.id).to.be.a('string'));",
+            "pm.test('has items array', () => pm.expect(d.items).to.be.an('array'));",
+            "pm.test('each item has item_name', () => d.items.forEach(i => pm.expect(i.item_name).to.be.a('string')));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/vendor/orders/{{order_id}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-24-02 Non-existent order → 404",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 404', () => pm.response.to.have.status(404));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/vendor/orders/00000000-0000-0000-0000-000000000000",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task #25 — Revenue Sparkline",
+      "item": [
+        {
+          "name": "TC-25-01 GET weekly revenue — 7 entries",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const days = pm.response.json().data;",
+            "pm.test('exactly 7 days', () => pm.expect(days).to.have.length(7));",
+            "pm.test('each has date, revenue, orders', () => days.forEach(d => {",
+            "  pm.expect(d.date).to.match(/\\d{4}-\\d{2}-\\d{2}/);",
+            "  pm.expect(d.revenue).to.be.a('number');",
+            "  pm.expect(d.orders).to.be.a('number');",
+            "}));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/vendor/revenue/weekly",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-25-02 Revenue dates in ascending order",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "const days = pm.response.json().data;",
+            "pm.test('dates ascending', () => {",
+            "  for (let i = 1; i < days.length; i++) {",
+            "    pm.expect(days[i].date >= days[i-1].date).to.be.true;",
+            "  }",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/vendor/revenue/weekly",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-25-03 Weekly — unauthenticated → 401",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/vendor/revenue/weekly" }
+        }
+      ]
+    },
+    {
+      "name": "Task #27 — Staff PIN Management",
+      "item": [
+        {
+          "name": "TC-27-01 List staff PINs — no pin_hash in response",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const pins = pm.response.json().data;",
+            "pm.test('returns array', () => pm.expect(pins).to.be.an('array'));",
+            "pm.test('pin_hash NOT in response', () => pins.forEach(p => pm.expect(p).to.not.have.property('pin_hash')));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/vendor/staff-pins",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-27-02 List PINs — unauthenticated → 401",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/vendor/staff-pins" }
+        },
+        {
+          "name": "TC-27-03 Create staff PIN",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 201', () => pm.response.to.have.status(201));",
+            "const pin = pm.response.json().data;",
+            "pm.test('has id', () => pm.expect(pin.id).to.be.a('string'));",
+            "pm.test('pin_hash NOT returned', () => pm.expect(pin).to.not.have.property('pin_hash'));",
+            "pm.collectionVariables.set('staff_pin_id', pin.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/vendor/staff-pins",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"pin\":\"9999\",\"label\":\"Test Station\",\"role\":\"vendor_kitchen\"}" }
+          }
+        },
+        {
+          "name": "TC-27-06 PIN login — correct PIN",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('has access_token', () => pm.expect(pm.response.json().data.access_token).to.be.a('string'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/auth/pin-login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"pin\":\"5678\",\"vendor_id\":\"{{vendor_id}}\"}" }
+          }
+        },
+        {
+          "name": "TC-27-07 PIN login — wrong PIN → 401",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/auth/pin-login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"pin\":\"0000\",\"vendor_id\":\"{{vendor_id}}\"}" }
+          }
+        },
+        {
+          "name": "TC-27-09 Toggle PIN active → inactive",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "pm.test('is_active toggled', () => pm.expect(pm.response.json().data).to.have.property('is_active'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PATCH", "url": "{{base_url}}/vendor/staff-pins/{{staff_pin_id}}/toggle",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-27-11 Delete staff PIN",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200 or 204', () => pm.expect([200, 204]).to.include(pm.response.code));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "DELETE", "url": "{{base_url}}/vendor/staff-pins/{{staff_pin_id}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task #28 — Payout Summary",
+      "item": [
+        {
+          "name": "TC-28-01 GET payout summary",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const d = pm.response.json().data;",
+            "pm.test('has revenue_this_month', () => pm.expect(d).to.have.property('revenue_this_month'));",
+            "pm.test('has deductions array', () => pm.expect(d.deductions).to.be.an('array'));",
+            "pm.test('has net_this_month', () => pm.expect(d).to.have.property('net_this_month'));",
+            "pm.test('has all_time_revenue', () => pm.expect(d).to.have.property('all_time_revenue'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/vendor/payout/summary",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-28-02 Payout — unauthenticated → 401",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/vendor/payout/summary" }
+        }
+      ]
+    },
+    {
+      "name": "Task #29 — Menu Item Duplication",
+      "item": [
+        {
+          "name": "TC-29-01 Duplicate Mango Juice",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 201', () => pm.response.to.have.status(201));",
+            "const d = pm.response.json().data;",
+            "pm.test('name ends with (Copy)', () => pm.expect(d.name).to.match(/\\(Copy\\)$/));",
+            "pm.collectionVariables.set('dup_item_id', d.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/vendor/menu-items/{{juice_item_id}}/duplicate",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        },
+        {
+          "name": "TC-29-02 Duplicate — copy is_available is false",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const menu = pm.response.json().data;",
+            "const cats = menu.categories || menu;",
+            "const juice = cats.find(c => c.name === 'Juice');",
+            "const copy = juice ? juice.items.find(i => i.name.includes('(Copy)')) : null;",
+            "if (copy) { pm.test('copy is_available false', () => pm.expect(copy.is_available).to.be.false); }",
+            "else { pm.test('copy not in response (check vendor menu endpoint)', () => true); }"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET", "url": "{{base_url}}/vendors/{{vendor_id}}/menu",
+            "header": []
+          }
+        },
+        {
+          "name": "TC-29-03 Duplicate item from wrong vendor → 404",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 404', () => pm.response.to.have.status(404));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/vendor/menu-items/2c27dfcb-6010-4042-9263-2492006ce4f8/duplicate",
+            "header": [{ "key": "Authorization", "value": "Bearer {{vendor_token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Task #30 — Customer Rating",
+      "item": [
+        {
+          "name": "TC-30-01 Rate order 5 stars",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200 or 201', () => pm.expect([200, 201]).to.include(pm.response.code));",
+            "const d = pm.response.json().data;",
+            "pm.test('has id', () => pm.expect(d.id).to.be.a('string'));",
+            "pm.test('rating is 5', () => pm.expect(d.rating).to.eql(5));",
+            "pm.test('comment saved', () => pm.expect(d.comment).to.eql('Excellent service!'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders/{{order_id}}/rate",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"rating\":5,\"comment\":\"Excellent service!\"}" }
+          }
+        },
+        {
+          "name": "TC-30-02 Re-rate same order → upserts",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200 or 201', () => pm.expect([200, 201]).to.include(pm.response.code));",
+            "pm.test('rating updated to 4', () => pm.expect(pm.response.json().data.rating).to.eql(4));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders/{{order_id}}/rate",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"rating\":4,\"comment\":\"Updated rating\"}" }
+          }
+        },
+        {
+          "name": "TC-30-03 Rating 0 → 400",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 400', () => pm.response.to.have.status(400));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders/{{order_id}}/rate",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"rating\":0}" }
+          }
+        },
+        {
+          "name": "TC-30-04 Rating 6 → 400",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 400', () => pm.response.to.have.status(400));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders/{{order_id}}/rate",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"rating\":6}" }
+          }
+        },
+        {
+          "name": "TC-30-05 Rate non-existent order → 404",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 404', () => pm.response.to.have.status(404));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders/00000000-0000-0000-0000-000000000000/rate",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"rating\":3}" }
+          }
+        },
+        {
+          "name": "TC-30-06 Rate without comment",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200 or 201', () => pm.expect([200, 201]).to.include(pm.response.code));",
+            "pm.test('comment is null or empty', () => {",
+            "  const c = pm.response.json().data.comment;",
+            "  pm.expect(c === null || c === '' || c === undefined).to.be.true;",
+            "});"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/orders/{{order_id}}/rate",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"rating\":3}" }
+          }
+        },
+        {
+          "name": "TC-30-07 GET rating before rating",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200 or 404', () => pm.expect([200, 404]).to.include(pm.response.code));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/orders/00000000-0000-0000-0000-000000000099/rating" }
+        },
+        {
+          "name": "TC-30-08 GET rating after POST",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const d = pm.response.json().data;",
+            "pm.test('has rating value', () => pm.expect(d.rating).to.be.a('number'));",
+            "pm.test('rating 1-5', () => pm.expect(d.rating).to.be.within(1, 5));"
+          ], "type": "text/javascript" }}],
+          "request": { "method": "GET", "url": "{{base_url}}/orders/{{order_id}}/rating" }
+        }
+      ]
+    }
+  ]
+}

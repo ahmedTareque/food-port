@@ -33,8 +33,19 @@ let OrdersController = class OrdersController {
     getStatus(orderId) {
         return this.ordersService.getStatus(orderId);
     }
+    findByToken(token) {
+        return this.ordersService.findByToken(parseInt(token, 10));
+    }
     cancel(orderId, body) {
         return this.ordersService.cancel(orderId, body.reason);
+    }
+    rate(orderId, rating, comment) {
+        if (!rating || rating < 1 || rating > 5)
+            throw new common_1.BadRequestException('Rating must be 1-5');
+        return this.ordersService.rateOrder(orderId, rating, comment);
+    }
+    getRating(orderId) {
+        return this.ordersService.getOrderRating(orderId);
     }
 };
 exports.OrdersController = OrdersController;
@@ -65,6 +76,14 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "getStatus", null);
 __decorate([
+    Public(),
+    (0, common_1.Get)('by-token/:token'),
+    __param(0, (0, common_1.Param)('token')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "findByToken", null);
+__decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Patch)(':orderId/cancel'),
@@ -74,6 +93,24 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "cancel", null);
+__decorate([
+    Public(),
+    (0, common_1.Post)(':orderId/rate'),
+    __param(0, (0, common_1.Param)('orderId')),
+    __param(1, (0, common_1.Body)('rating')),
+    __param(2, (0, common_1.Body)('comment')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, String]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "rate", null);
+__decorate([
+    Public(),
+    (0, common_1.Get)(':orderId/rating'),
+    __param(0, (0, common_1.Param)('orderId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "getRating", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, throttler_1.SkipThrottle)({ auth: true, order: true }),
     (0, swagger_1.ApiTags)('Orders'),

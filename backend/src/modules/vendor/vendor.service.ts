@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { JwtUser } from '../../common/decorators/current-user.decorator';
 import {
@@ -19,7 +19,7 @@ export class VendorService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [orders, activeItems, completedItems] = await Promise.all([
+    const [orders, activeItems, completedItems, ratingAgg] = await Promise.all([
       this.prisma.order.findMany({
         where: { items: { some: { vendor_id: vendorId } }, created_at: { gte: today } },
         include: { items: { where: { vendor_id: vendorId }, select: { total_price: true, status: true, item_name: true } } },
@@ -30,6 +30,11 @@ export class VendorService {
       this.prisma.orderItem.findMany({
         where: { vendor_id: vendorId, status: 'completed', completed_at: { gte: today } },
         select: { estimated_prep_time: true, accepted_at: true, completed_at: true },
+      }),
+      this.prisma.orderRating.aggregate({
+        where: { order: { items: { some: { vendor_id: vendorId } } } },
+        _avg: { rating: true },
+        _count: { rating: true },
       }),
     ]);
 
@@ -63,6 +68,8 @@ export class VendorService {
       revenue_today: Math.round(revenue * 100) / 100,
       active_queue: activeItems,
       avg_prep_time: avgPrepTime,
+      avg_rating: ratingAgg._avg.rating ? Math.round(ratingAgg._avg.rating * 10) / 10 : null,
+      rating_count: ratingAgg._count.rating,
       top_items: topItems,
       recent_orders: recentOrders,
     };
@@ -103,6 +110,63 @@ export class VendorService {
         created_at: o.created_at.toISOString(),
       })),
       meta: { page, limit, total, total_pages: Math.ceil(total / limit), has_next: skip + limit < total, has_prev: page > 1 },
+    };
+  }
+
+  async getWeeklyRevenue(user: JwtUser) {
+    const vendorId = this.requireVendor(user);
+    const days: { date: string; revenue: number; orders: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const start = new Date();
+      start.setDate(start.getDate() - i);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start);
+      end.setHours(23, 59, 59, 999);
+      const items = await this.prisma.orderItem.findMany({
+        where: { vendor_id: vendorId, status: 'completed', completed_at: { gte: start, lte: end } },
+        select: { total_price: true, order_id: true },
+      });
+      const uniqueOrders = new Set(items.map((i) => i.order_id)).size;
+      days.push({
+        date: start.toISOString().slice(0, 10),
+        revenue: Math.round(items.reduce((s, i) => s + i.total_price, 0) * 100) / 100,
+        orders: uniqueOrders,
+      });
+    }
+    return { days };
+  }
+
+  async getOrderDetail(user: JwtUser, orderId: string) {
+    const vendorId = this.requireVendor(user);
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, items: { some: { vendor_id: vendorId } } },
+      include: {
+        items: {
+          where: { vendor_id: vendorId },
+          include: { modifiers: true },
+        },
+        table: { select: { table_number: true } },
+      },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    return {
+      id: order.id,
+      token_number: order.token_number,
+      table_number: order.table?.table_number ?? null,
+      status: order.status,
+      created_at: order.created_at.toISOString(),
+      special_notes: order.special_notes,
+      items: order.items.map((i) => ({
+        id: i.id,
+        item_name: i.item_name,
+        quantity: i.quantity,
+        base_price: i.unit_price,
+        total_price: i.total_price,
+        status: i.status,
+        special_instructions: i.special_instructions,
+        modifiers: i.modifiers.map((m) => ({ name: m.modifier_name, price: m.price_at_order })),
+      })),
+      total: order.items.reduce((s, i) => s + i.total_price, 0),
     };
   }
 
@@ -319,6 +383,8 @@ export class VendorService {
 
   async createCategory(user: JwtUser, dto: CreateCategoryDto) {
     const vendorId = this.requireVendor(user);
+    const existing = await this.prisma.menuCategory.findFirst({ where: { vendor_id: vendorId, name: dto.name } });
+    if (existing) throw new ConflictException('Category name already exists');
     return this.prisma.menuCategory.create({
       data: {
         vendor_id: vendorId,
@@ -334,6 +400,27 @@ export class VendorService {
     const cat = await this.prisma.menuCategory.findFirst({ where: { id: categoryId, vendor_id: vendorId } });
     if (!cat) throw new NotFoundException('Category not found');
     return this.prisma.menuCategory.update({ where: { id: categoryId }, data: dto });
+  }
+
+  async bulkSetCategoryAvailability(user: JwtUser, categoryId: string, is_available: boolean) {
+    const vendorId = this.requireVendor(user);
+    const cat = await this.prisma.menuCategory.findFirst({ where: { id: categoryId, vendor_id: vendorId } });
+    if (!cat) throw new NotFoundException('Category not found');
+    const result = await this.prisma.menuItem.updateMany({
+      where: { category_id: categoryId, vendor_id: vendorId, is_deleted: false },
+      data: { is_available },
+    });
+    return { updated: result.count, is_available };
+  }
+
+  async deleteCategory(user: JwtUser, categoryId: string) {
+    const vendorId = this.requireVendor(user);
+    const cat = await this.prisma.menuCategory.findFirst({ where: { id: categoryId, vendor_id: vendorId } });
+    if (!cat) throw new NotFoundException('Category not found');
+    const itemCount = await this.prisma.menuItem.count({ where: { category_id: categoryId, is_deleted: false } });
+    if (itemCount > 0) throw new BadRequestException(`Cannot delete category with ${itemCount} active items`);
+    await this.prisma.menuCategory.delete({ where: { id: categoryId } });
+    return { deleted: true };
   }
 
   // ─── Modifier Groups ─────────────────────────────────────────────────────────
@@ -394,12 +481,13 @@ export class VendorService {
     const updated = await this.prisma.vendor.update({
       where: { id: vendorId },
       data: {
-        ...(dto.name ? { name: dto.name } : {}),
-        ...(dto.cuisine_type ? { cuisine_type: dto.cuisine_type } : {}),
-        ...(dto.booth_color ? { booth_color: dto.booth_color } : {}),
-        ...(dto.avg_prep_time_minutes ? { avg_prep_time_minutes: dto.avg_prep_time_minutes } : {}),
-        ...(dto.operating_hours ? { operating_hours: dto.operating_hours } : {}),
-        ...(dto.notification_preferences ? { notification_prefs: dto.notification_preferences } : {}),
+        ...(dto.name !== undefined ? { name: dto.name } : {}),
+        ...(dto.cuisine_type !== undefined ? { cuisine_type: dto.cuisine_type } : {}),
+        ...(dto.booth_color !== undefined ? { booth_color: dto.booth_color } : {}),
+        ...(dto.avg_prep_time_minutes !== undefined ? { avg_prep_time_minutes: dto.avg_prep_time_minutes } : {}),
+        ...(dto.operating_hours !== undefined ? { operating_hours: dto.operating_hours } : {}),
+        ...(dto.notification_preferences !== undefined ? { notification_prefs: dto.notification_preferences } : {}),
+        ...(dto.logo_url !== undefined ? { logo_url: dto.logo_url } : {}),
       },
     });
     return updated;
@@ -412,6 +500,192 @@ export class VendorService {
       data: { is_accepting_orders: dto.is_accepting_orders, status: dto.is_accepting_orders ? 'online' : 'offline' },
     });
     return { id: updated.id, is_accepting_orders: updated.is_accepting_orders, status: updated.status };
+  }
+
+  // ─── Menu Item Duplication ───────────────────────────────────────────────────
+
+  async duplicateMenuItem(user: JwtUser, itemId: string) {
+    const vendorId = this.requireVendor(user);
+    const item = await this.prisma.menuItem.findFirst({
+      where: { id: itemId, vendor_id: vendorId, is_deleted: false },
+      include: { modifier_group_links: true },
+    });
+    if (!item) throw new NotFoundException('Menu item not found');
+    const copy = await this.prisma.menuItem.create({
+      data: {
+        vendor_id: item.vendor_id,
+        category_id: item.category_id,
+        name: `${item.name} (Copy)`,
+        description: item.description,
+        price: item.price,
+        image_url: item.image_url,
+        is_available: false,
+        sort_order: item.sort_order + 1,
+        prep_time_minutes: item.prep_time_minutes,
+      },
+    });
+    if (item.modifier_group_links.length > 0) {
+      await this.prisma.menuItemModifierGroup.createMany({
+        data: item.modifier_group_links.map((l) => ({ menu_item_id: copy.id, modifier_group_id: l.modifier_group_id })),
+        skipDuplicates: true,
+      });
+    }
+    return { id: copy.id, name: copy.name };
+  }
+
+  // ─── Payout Summary ──────────────────────────────────────────────────────────
+
+  async getPayoutSummary(user: JwtUser) {
+    const vendorId = this.requireVendor(user);
+    const now = new Date();
+    const thisMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [revenueThisMonth, transactions, allTimeRevenue] = await Promise.all([
+      this.prisma.orderItem.aggregate({
+        where: { vendor_id: vendorId, status: 'completed', completed_at: { gte: startOfMonth } },
+        _sum: { total_price: true },
+      }),
+      this.prisma.vendorTransaction.findMany({
+        where: { vendor_id: vendorId },
+        orderBy: [{ month: 'desc' }, { type: 'asc' }],
+        take: 20,
+      }),
+      this.prisma.orderItem.aggregate({
+        where: { vendor_id: vendorId, status: 'completed' },
+        _sum: { total_price: true },
+      }),
+    ]);
+
+    const thisMonthDeductions = transactions
+      .filter((t) => t.month === thisMonthStr && t.is_paid)
+      .reduce((s, t) => s + (t.amount ?? 0), 0);
+
+    return {
+      revenue_this_month: Math.round((revenueThisMonth._sum.total_price ?? 0) * 100) / 100,
+      deductions_this_month: Math.round(thisMonthDeductions * 100) / 100,
+      net_this_month: Math.round(((revenueThisMonth._sum.total_price ?? 0) - thisMonthDeductions) * 100) / 100,
+      all_time_revenue: Math.round((allTimeRevenue._sum.total_price ?? 0) * 100) / 100,
+      transactions: transactions.map((t) => ({
+        id: t.id, type: t.type, month: t.month, amount: t.amount,
+        is_paid: t.is_paid, due_date: t.due_date?.toISOString(), paid_at: t.paid_at?.toISOString(), notes: t.notes,
+      })),
+    };
+  }
+
+  // ─── Staff PINs ─────────────────────────────────────────────────────────────
+
+  async listStaffPins(user: JwtUser) {
+    const vendorId = this.requireVendor(user);
+    const pins = await this.prisma.staffPin.findMany({
+      where: { vendor_id: vendorId },
+      select: { id: true, label: true, role: true, is_active: true, created_at: true },
+      orderBy: { created_at: 'asc' },
+    });
+    return pins;
+  }
+
+  async createStaffPin(user: JwtUser, label: string, pin: string) {
+    const vendorId = this.requireVendor(user);
+    if (!/^\d{4,6}$/.test(pin)) throw new BadRequestException('PIN must be 4-6 digits');
+    const bcrypt = await import('bcrypt');
+    const pin_hash = await bcrypt.hash(`pin:${pin}`, 10);
+    const created = await this.prisma.staffPin.create({
+      data: { vendor_id: vendorId, label, pin_hash, role: 'vendor_kitchen', is_active: true },
+      select: { id: true, label: true, role: true, is_active: true, created_at: true },
+    });
+    return created;
+  }
+
+  async toggleStaffPin(user: JwtUser, pinId: string, is_active: boolean) {
+    const vendorId = this.requireVendor(user);
+    const pin = await this.prisma.staffPin.findFirst({ where: { id: pinId, vendor_id: vendorId } });
+    if (!pin) throw new NotFoundException('Staff PIN not found');
+    return this.prisma.staffPin.update({ where: { id: pinId }, data: { is_active }, select: { id: true, is_active: true } });
+  }
+
+  async deleteStaffPin(user: JwtUser, pinId: string) {
+    const vendorId = this.requireVendor(user);
+    const pin = await this.prisma.staffPin.findFirst({ where: { id: pinId, vendor_id: vendorId } });
+    if (!pin) throw new NotFoundException('Staff PIN not found');
+    await this.prisma.staffPin.delete({ where: { id: pinId } });
+    return { deleted: true };
+  }
+
+  // ─── Reports ─────────────────────────────────────────────────────────────────
+
+  async getSalesReport(user: JwtUser, from?: string, to?: string) {
+    const vendorId = this.requireVendor(user);
+    const fromDate = from ? new Date(from) : (() => { const d = new Date(); d.setDate(d.getDate() - 29); d.setHours(0,0,0,0); return d; })();
+    const toDate = to ? new Date(to) : new Date();
+
+    const orders = await this.prisma.order.findMany({
+      where: { items: { some: { vendor_id: vendorId } }, created_at: { gte: fromDate, lte: toDate } },
+      include: { items: { where: { vendor_id: vendorId }, select: { total_price: true } } },
+      orderBy: { created_at: 'asc' },
+    });
+
+    const byDate: Record<string, { date: string; orders: number; revenue: number }> = {};
+    for (const order of orders) {
+      const key = order.created_at.toISOString().slice(0, 10);
+      if (!byDate[key]) byDate[key] = { date: key, orders: 0, revenue: 0 };
+      byDate[key].orders += 1;
+      byDate[key].revenue += order.items.reduce((s, i) => s + i.total_price, 0);
+    }
+
+    const days = Object.values(byDate).map((d) => ({ ...d, revenue: Math.round(d.revenue * 100) / 100 }));
+    const totalRevenue = days.reduce((s, d) => s + d.revenue, 0);
+    const totalOrders = days.reduce((s, d) => s + d.orders, 0);
+    return { days, total_revenue: Math.round(totalRevenue * 100) / 100, total_orders: totalOrders };
+  }
+
+  async getTopItemsReport(user: JwtUser, from?: string, to?: string, limit = 10) {
+    const vendorId = this.requireVendor(user);
+    const fromDate = from ? new Date(from) : (() => { const d = new Date(); d.setDate(d.getDate() - 29); d.setHours(0,0,0,0); return d; })();
+    const toDate = to ? new Date(to) : new Date();
+
+    const items = await this.prisma.orderItem.findMany({
+      where: { vendor_id: vendorId, created_at: { gte: fromDate, lte: toDate } },
+      select: { item_name: true, total_price: true, quantity: true },
+    });
+
+    const agg: Record<string, { item_name: string; count: number; revenue: number }> = {};
+    for (const item of items) {
+      if (!agg[item.item_name]) agg[item.item_name] = { item_name: item.item_name, count: 0, revenue: 0 };
+      agg[item.item_name].count += item.quantity;
+      agg[item.item_name].revenue += item.total_price;
+    }
+
+    return Object.values(agg)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limit)
+      .map((i) => ({ ...i, revenue: Math.round(i.revenue * 100) / 100 }));
+  }
+
+  async getPeakHoursReport(user: JwtUser, from?: string, to?: string) {
+    const vendorId = this.requireVendor(user);
+    const fromDate = from ? new Date(from) : (() => { const d = new Date(); d.setDate(d.getDate() - 29); d.setHours(0,0,0,0); return d; })();
+    const toDate = to ? new Date(to) : new Date();
+
+    const orders = await this.prisma.order.findMany({
+      where: { items: { some: { vendor_id: vendorId } }, created_at: { gte: fromDate, lte: toDate } },
+      select: { created_at: true },
+    });
+
+    const grid: Record<string, number> = {};
+    for (const order of orders) {
+      const d = order.created_at;
+      const key = `${d.getDay()}-${d.getHours()}`;
+      grid[key] = (grid[key] ?? 0) + 1;
+    }
+
+    const result: { day_of_week: number; hour: number; count: number }[] = [];
+    for (let day = 0; day < 7; day++) {
+      for (let hour = 0; hour < 24; hour++) {
+        result.push({ day_of_week: day, hour, count: grid[`${day}-${hour}`] ?? 0 });
+      }
+    }
+    return result;
   }
 
   private requireVendor(user: JwtUser): string {

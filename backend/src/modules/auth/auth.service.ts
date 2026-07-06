@@ -93,7 +93,7 @@ export class AuthService {
 
     let matchedPin: typeof staffPins[0] | null = null;
     for (const sp of staffPins) {
-      const isMatch = await bcrypt.compare(dto.pin, sp.pin_hash);
+      const isMatch = await bcrypt.compare(`pin:${dto.pin}`, sp.pin_hash);
       if (isMatch) { matchedPin = sp; break; }
     }
 

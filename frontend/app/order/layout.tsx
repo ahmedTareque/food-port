@@ -1,7 +1,48 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/store/cartStore';
+
+const IDLE_SECONDS = 90;
+const COUNTDOWN_SECONDS = 10;
+
+function IdleOverlay({ countdown, onStay }: { countdown: number; onStay: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm"
+      onClick={onStay}
+    >
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="text-center"
+      >
+        <div className="text-7xl mb-6">😴</div>
+        <h2 className="font-heading text-4xl text-brand-orange mb-2 tracking-widest">STILL THERE?</h2>
+        <p className="text-brand-dim font-body text-base mb-8">Your cart will be cleared in</p>
+        <motion.div
+          key={countdown}
+          initial={{ scale: 1.4, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="font-heading text-[96px] leading-none text-brand-orange token-glow mb-8"
+        >
+          {countdown}
+        </motion.div>
+        <button
+          onClick={(e) => { e.stopPropagation(); onStay(); }}
+          className="bg-brand-orange text-white font-heading text-xl px-10 py-4 rounded-2xl tracking-widest hover:bg-orange-500 transition-colors"
+        >
+          TAP TO CONTINUE
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -9,13 +50,78 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const itemCount = useCartStore((s) => s.itemCount());
   const total = useCartStore((s) => s.total());
   const tableNumber = useCartStore((s) => s.tableNumber);
+  const clearCart = useCartStore((s) => s.clearCart);
 
   const isWelcome = pathname === '/order';
   const isConfirmation = pathname.startsWith('/order/confirmation');
   const showCartBar = !isWelcome && !isConfirmation && itemCount > 0;
 
+  // Accessibility mode
+  const [a11y, setA11y] = useState(false);
+
+  // Idle detection
+  const [showIdle, setShowIdle] = useState(false);
+  const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function resetIdle() {
+    setShowIdle(false);
+    setCountdown(COUNTDOWN_SECONDS);
+    if (countdownTimer.current) clearInterval(countdownTimer.current);
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    if (!isWelcome && !isConfirmation) {
+      idleTimer.current = setTimeout(() => {
+        setShowIdle(true);
+        setCountdown(COUNTDOWN_SECONDS);
+        let c = COUNTDOWN_SECONDS;
+        countdownTimer.current = setInterval(() => {
+          c -= 1;
+          setCountdown(c);
+          if (c <= 0) {
+            clearInterval(countdownTimer.current!);
+            clearCart();
+            router.push('/order');
+            setShowIdle(false);
+          }
+        }, 1000);
+      }, IDLE_SECONDS * 1000);
+    }
+  }
+
+  useEffect(() => {
+    resetIdle();
+    const events = ['touchstart', 'click', 'keydown', 'mousemove', 'scroll'];
+    events.forEach((e) => window.addEventListener(e, resetIdle));
+    return () => {
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+      if (countdownTimer.current) clearInterval(countdownTimer.current);
+      events.forEach((e) => window.removeEventListener(e, resetIdle));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isWelcome, isConfirmation]);
+
   return (
-    <div className="min-h-screen bg-brand-bg flex flex-col">
+    <div className={`min-h-screen bg-brand-bg flex flex-col ${a11y ? 'text-[110%] a11y-mode' : ''}`}>
+      <AnimatePresence>
+        {showIdle && (
+          <IdleOverlay countdown={countdown} onStay={resetIdle} />
+        )}
+      </AnimatePresence>
+
+      {/* Accessibility toggle */}
+      <button
+        onClick={() => setA11y((v) => !v)}
+        aria-label={a11y ? 'Disable accessibility mode' : 'Enable accessibility mode'}
+        title="Accessibility mode"
+        className={`fixed bottom-24 right-4 z-50 w-10 h-10 rounded-full flex items-center justify-center text-base shadow-lg transition-all ${
+          a11y
+            ? 'bg-yellow-400 text-black border-2 border-yellow-500'
+            : 'bg-white/10 text-brand-dim border border-white/10 hover:bg-white/20'
+        }`}
+      >
+        ♿
+      </button>
       {/* Header */}
       <header className="sticky top-0 z-40 glass border-b border-white/6 px-4 py-3 flex items-center gap-3">
         {!isWelcome && (

@@ -8,15 +8,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.KdsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../database/prisma.service");
 const orders_service_1 = require("../orders/orders.service");
+const kds_gateway_1 = require("./kds.gateway");
 let KdsService = class KdsService {
-    constructor(prisma, ordersService) {
+    constructor(prisma, ordersService, kdsGateway) {
         this.prisma = prisma;
         this.ordersService = ordersService;
+        this.kdsGateway = kdsGateway;
     }
     async getOrders(user) {
         const vendorId = user.vendor_id;
@@ -91,7 +96,9 @@ let KdsService = class KdsService {
             select: { id: true, table_number: true },
         });
         const tableMap = Object.fromEntries(tables.map((t) => [t.id, t.table_number]));
-        return this.formatCard(updated, tableMap);
+        const card = this.formatCard(updated, tableMap);
+        this.kdsGateway?.emitOrderUpdate(updated.vendor_id, card);
+        return card;
     }
     async getQueueStats(user) {
         const vendorId = user.vendor_id;
@@ -111,10 +118,13 @@ let KdsService = class KdsService {
         const oldestMinutes = queueItems.length > 0
             ? Math.round((Date.now() - queueItems[0].created_at.getTime()) / 60000)
             : 0;
+        const avgWaitMinutes = queueItems.length > 0
+            ? Math.round(queueItems.reduce((sum, i) => sum + (Date.now() - i.created_at.getTime()) / 60000, 0) / queueItems.length)
+            : 0;
         return {
             vendor_id: vendorId,
             queue_depth: queueItems.length,
-            avg_prep_time_minutes: Math.round(avgResult._avg.estimated_prep_time ?? 10),
+            avg_wait_minutes: avgWaitMinutes,
             oldest_pending_minutes: oldestMinutes,
         };
     }
@@ -143,7 +153,9 @@ let KdsService = class KdsService {
 exports.KdsService = KdsService;
 exports.KdsService = KdsService = __decorate([
     (0, common_1.Injectable)(),
+    __param(2, (0, common_1.Optional)()),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        orders_service_1.OrdersService])
+        orders_service_1.OrdersService,
+        kds_gateway_1.KdsGateway])
 ], KdsService);
 //# sourceMappingURL=kds.service.js.map

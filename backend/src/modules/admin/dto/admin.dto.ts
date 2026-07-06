@@ -71,3 +71,25 @@ export class CashLogDto {
   @IsString() collected_by: string;
   @IsString() @IsOptional() notes?: string;
 }
+
+export class CreateUserDto {
+  @IsString() full_name: string;
+  @IsEmail() email: string;
+  @IsString() password: string;
+  @IsEnum(['super_admin', 'admin', 'vendor_owner', 'vendor_kitchen', 'vendor_cashier', 'waiter']) role: string;
+  @IsString() @IsOptional() vendor_id?: string;
+}
+
+export class UpdateUserDto {
+  @IsString() @IsOptional() full_name?: string;
+  @IsEnum(['super_admin', 'admin', 'vendor_owner', 'vendor_kitchen', 'vendor_cashier', 'waiter']) @IsOptional() role?: string;
+  @IsBoolean() @IsOptional() is_active?: boolean;
+}
+
+export class SystemSettingsDto {
+  @IsString() @IsOptional() food_village_name?: string;
+  @IsNumber() @IsOptional() tax_rate?: number;
+  @IsNumber() @IsOptional() default_commission_rate?: number;
+  @IsString() @IsOptional() currency?: string;
+  @IsString() @IsOptional() timezone?: string;
+}

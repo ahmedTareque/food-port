@@ -59,3 +59,22 @@ export declare class CashLogDto {
     collected_by: string;
     notes?: string;
 }
+export declare class CreateUserDto {
+    full_name: string;
+    email: string;
+    password: string;
+    role: string;
+    vendor_id?: string;
+}
+export declare class UpdateUserDto {
+    full_name?: string;
+    role?: string;
+    is_active?: boolean;
+}
+export declare class SystemSettingsDto {
+    food_village_name?: string;
+    tax_rate?: number;
+    default_commission_rate?: number;
+    currency?: string;
+    timezone?: string;
+}

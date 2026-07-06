@@ -89,14 +89,35 @@ let AdminController = class AdminController {
     removeStaff(user, vendorId, userId) {
         return this.adminService.removeStaff(user, vendorId, userId);
     }
+    createStaffForVendor(user, id, dto) {
+        return this.adminService.createStaffForVendor(user, id, dto);
+    }
+    getVendorDetail(id) {
+        return this.adminService.getVendorDetail(id);
+    }
+    getUsers(role, page, limit) {
+        return this.adminService.getUsers(role, page ? +page : 1, limit ? +limit : 20);
+    }
+    createUser(user, dto) {
+        return this.adminService.createUser(user, dto);
+    }
+    updateUser(user, id, dto) {
+        return this.adminService.updateUser(user, id, dto);
+    }
+    getSystemSettings() {
+        return this.adminService.getSystemSettings();
+    }
+    updateSystemSettings(user, dto) {
+        return this.adminService.updateSystemSettings(user, dto);
+    }
     getDailySummary(from, to) {
         return this.adminService.getDailySummary(from, to);
     }
     getRevenueByVendor(from, to) {
         return this.adminService.getRevenueByVendor(from, to);
     }
-    getCashLog(date, page, limit) {
-        return this.adminService.getCashLog(date, page ? +page : 1, limit ? +limit : 20);
+    getCashLog(date, page, limit, from, to) {
+        return this.adminService.getCashLog(date, page ? +page : 1, limit ? +limit : 20, from, to);
     }
     createCashLog(user, dto) {
         return this.adminService.createCashLog(user, dto);
@@ -324,6 +345,69 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "removeStaff", null);
 __decorate([
+    (0, common_1.Post)('vendors/:id/staff'),
+    (0, roles_decorator_1.Roles)('super_admin', 'admin'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, admin_dto_1.CreateStaffDto]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "createStaffForVendor", null);
+__decorate([
+    (0, common_1.Get)('vendors/:id/detail'),
+    (0, roles_decorator_1.Roles)('super_admin', 'admin'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getVendorDetail", null);
+__decorate([
+    (0, common_1.Get)('users'),
+    (0, roles_decorator_1.Roles)('super_admin', 'admin'),
+    __param(0, (0, common_1.Query)('role')),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getUsers", null);
+__decorate([
+    (0, common_1.Post)('users'),
+    (0, roles_decorator_1.Roles)('super_admin', 'admin'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, admin_dto_1.CreateUserDto]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "createUser", null);
+__decorate([
+    (0, common_1.Put)('users/:id'),
+    (0, roles_decorator_1.Roles)('super_admin', 'admin'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, admin_dto_1.UpdateUserDto]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "updateUser", null);
+__decorate([
+    (0, common_1.Get)('settings'),
+    (0, roles_decorator_1.Roles)('super_admin', 'admin'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "getSystemSettings", null);
+__decorate([
+    (0, common_1.Put)('settings'),
+    (0, roles_decorator_1.Roles)('super_admin'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, admin_dto_1.SystemSettingsDto]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "updateSystemSettings", null);
+__decorate([
     (0, common_1.Get)('finance/daily'),
     (0, roles_decorator_1.Roles)('super_admin', 'admin'),
     __param(0, (0, common_1.Query)('from')),
@@ -347,8 +431,10 @@ __decorate([
     __param(0, (0, common_1.Query)('date')),
     __param(1, (0, common_1.Query)('page')),
     __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('from')),
+    __param(4, (0, common_1.Query)('to')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getCashLog", null);
 __decorate([

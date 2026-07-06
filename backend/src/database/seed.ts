@@ -14,6 +14,7 @@ const VENDORS = [
   { name: "Falafel House", slug: "falafel-house", cuisine: "Middle Eastern", color: "#6A994E", booth: 8 },
   { name: "Dessert Den", slug: "dessert-den", cuisine: "Desserts", color: "#9B5DE5", booth: 9 },
   { name: "BBQ Boss", slug: "bbq-boss", cuisine: "BBQ", color: "#CB4335", booth: 10 },
+  { name: "Food Port", slug: "food-port", cuisine: "Multi-Cuisine", color: "#FF6B35", booth: 11 },
 ];
 
 const MENU_TEMPLATES: Record<string, { categories: { name: string; items: { name: string; desc: string; price: number; tags: string[]; prepTime: number }[] }[] }> = {
@@ -170,6 +171,134 @@ const MENU_TEMPLATES: Record<string, { categories: { name: string; items: { name
       ]},
     ],
   },
+  "food-port": {
+    categories: [
+      { name: "Juice", items: [
+        { name: "Mango Juice", desc: "Fresh Rajshahi mango blend, chilled", price: 80, tags: ["vegan", "gluten_free"], prepTime: 3 },
+        { name: "Mixed Fruit Juice", desc: "Seasonal fruits blended fresh", price: 100, tags: ["vegan", "gluten_free"], prepTime: 3 },
+        { name: "Watermelon Juice", desc: "Pure watermelon, hint of lemon", price: 70, tags: ["vegan", "gluten_free"], prepTime: 3 },
+        { name: "Orange Juice", desc: "Freshly squeezed oranges", price: 90, tags: ["vegan", "gluten_free"], prepTime: 3 },
+        { name: "Sugarcane Juice", desc: "Cold pressed sugarcane with ginger", price: 60, tags: ["vegan", "gluten_free"], prepTime: 3 },
+      ]},
+      { name: "Cold Coffee", items: [
+        { name: "Iced Americano", desc: "Double espresso over ice", price: 120, tags: [], prepTime: 3 },
+        { name: "Cold Brew", desc: "12-hour cold-steeped coffee, served black or with milk", price: 150, tags: [], prepTime: 3 },
+        { name: "Dalgona Coffee", desc: "Whipped coffee over cold milk", price: 130, tags: ["vegetarian"], prepTime: 5 },
+        { name: "Frappe", desc: "Blended coffee, ice, chocolate drizzle", price: 160, tags: ["vegetarian"], prepTime: 5 },
+      ]},
+      { name: "Milkshake", items: [
+        { name: "Chocolate Milkshake", desc: "Rich chocolate ice cream blended thick", price: 130, tags: ["vegetarian"], prepTime: 5 },
+        { name: "Strawberry Milkshake", desc: "Fresh strawberry, vanilla ice cream", price: 130, tags: ["vegetarian"], prepTime: 5 },
+        { name: "Mango Milkshake", desc: "Alphonso mango, full-cream milk", price: 140, tags: ["vegetarian"], prepTime: 5 },
+        { name: "Oreo Milkshake", desc: "Oreo cookies blended with vanilla ice cream", price: 150, tags: ["vegetarian"], prepTime: 5 },
+      ]},
+      { name: "Waffle", items: [
+        { name: "Classic Belgian Waffle", desc: "Crispy waffle, maple syrup, whipped cream", price: 150, tags: ["vegetarian"], prepTime: 8 },
+        { name: "Nutella & Banana Waffle", desc: "Warm waffle, Nutella, sliced banana, powdered sugar", price: 200, tags: ["vegetarian"], prepTime: 8 },
+        { name: "Lotus Biscoff Waffle", desc: "Waffle topped with Biscoff spread and cookie crumble", price: 220, tags: ["vegetarian"], prepTime: 9 },
+        { name: "Berry Waffle", desc: "Mixed berries compote, Greek yoghurt, honey drizzle", price: 210, tags: ["vegetarian"], prepTime: 8 },
+      ]},
+      { name: "Coffee", items: [
+        { name: "Cappuccino", desc: "Double shot espresso, steamed milk, thick foam", price: 120, tags: ["vegetarian"], prepTime: 4 },
+        { name: "Cafe Latte", desc: "Espresso with silky steamed milk", price: 130, tags: ["vegetarian"], prepTime: 4 },
+        { name: "Flat White", desc: "Ristretto shots, microfoam milk", price: 140, tags: ["vegetarian"], prepTime: 4 },
+        { name: "Mocha", desc: "Espresso, chocolate sauce, steamed milk, whipped cream", price: 150, tags: ["vegetarian"], prepTime: 5 },
+        { name: "Americano", desc: "Double espresso with hot water", price: 100, tags: [], prepTime: 3 },
+      ]},
+      { name: "Loaded Box", items: [
+        { name: "Loaded Fries Box", desc: "Crispy fries, cheese sauce, jalapeños, sour cream", price: 250, tags: ["vegetarian"], prepTime: 10 },
+        { name: "Loaded Chicken Box", desc: "Fried chicken strips, fries, coleslaw, dipping sauce", price: 350, tags: [], prepTime: 12 },
+        { name: "Mac & Cheese Box", desc: "Creamy macaroni, breadcrumb crust, garlic bread", price: 280, tags: ["vegetarian"], prepTime: 10 },
+        { name: "BBQ Pulled Chicken Box", desc: "Slow-cooked chicken, BBQ sauce, rice, pickles", price: 380, tags: [], prepTime: 15 },
+      ]},
+      { name: "Crispy Sides", items: [
+        { name: "Crispy Fries", desc: "Golden shoestring fries with seasoning salt", price: 120, tags: ["vegan"], prepTime: 7 },
+        { name: "Onion Rings", desc: "Beer-battered thick onion rings, ranch dip", price: 130, tags: ["vegetarian"], prepTime: 8 },
+        { name: "Popcorn Chicken", desc: "Bite-sized crispy chicken, spicy mayo", price: 160, tags: [], prepTime: 8 },
+        { name: "Mozzarella Sticks", desc: "Fried mozzarella, marinara dip (4pc)", price: 150, tags: ["vegetarian"], prepTime: 8 },
+      ]},
+      { name: "Fried Rice", items: [
+        { name: "Chicken Fried Rice", desc: "Wok-tossed jasmine rice, chicken, egg, soy sauce", price: 200, tags: [], prepTime: 12 },
+        { name: "Egg Fried Rice", desc: "Fragrant rice, scrambled egg, spring onion, oyster sauce", price: 150, tags: ["vegetarian"], prepTime: 10 },
+        { name: "Prawn Fried Rice", desc: "Tiger prawns, jasmine rice, garlic, chilli", price: 280, tags: [], prepTime: 12 },
+        { name: "Mixed Fried Rice", desc: "Chicken + prawn + egg, wok-charred rice", price: 320, tags: [], prepTime: 13 },
+      ]},
+      { name: "Wings & Lollipops", items: [
+        { name: "Buffalo Wings (6pc)", desc: "Classic buffalo sauce, celery, blue cheese dip", price: 280, tags: ["spicy"], prepTime: 12 },
+        { name: "Honey Garlic Wings (6pc)", desc: "Sweet-savory honey garlic glaze", price: 300, tags: [], prepTime: 12 },
+        { name: "Chicken Lollipop (4pc)", desc: "French-cut drumettes, dry rub spice, mint chutney", price: 250, tags: [], prepTime: 12 },
+        { name: "BBQ Lollipop (4pc)", desc: "Smoky BBQ glazed chicken lollipops", price: 270, tags: [], prepTime: 12 },
+      ]},
+      { name: "Taco", items: [
+        { name: "Chicken Taco", desc: "Spiced grilled chicken, pico de gallo, sour cream, flour tortilla", price: 180, tags: [], prepTime: 8 },
+        { name: "Beef Taco", desc: "Seasoned ground beef, cheddar, lettuce, salsa", price: 200, tags: [], prepTime: 8 },
+        { name: "Prawn Taco", desc: "Garlic butter prawns, mango salsa, lime crema", price: 220, tags: [], prepTime: 10 },
+        { name: "Veggie Taco", desc: "Roasted peppers, black beans, guac, feta", price: 150, tags: ["vegetarian"], prepTime: 7 },
+      ]},
+      { name: "Chow Mein", items: [
+        { name: "Chicken Chow Mein", desc: "Stir-fried egg noodles, chicken, mixed vegetables", price: 200, tags: [], prepTime: 10 },
+        { name: "Beef Chow Mein", desc: "Egg noodles, tender beef strips, bok choy, oyster sauce", price: 230, tags: [], prepTime: 12 },
+        { name: "Veg Chow Mein", desc: "Mixed vegetables, tofu, sesame oil, soy sauce", price: 150, tags: ["vegetarian"], prepTime: 9 },
+        { name: "Prawn Chow Mein", desc: "Tiger prawns, egg noodles, ginger-garlic sauce", price: 280, tags: [], prepTime: 12 },
+      ]},
+      { name: "Momo", items: [
+        { name: "Steamed Chicken Momo (6pc)", desc: "Minced chicken, ginger, coriander in thin dough, tomato chutney", price: 150, tags: [], prepTime: 15 },
+        { name: "Fried Chicken Momo (6pc)", desc: "Pan-fried chicken dumplings, crispy bottom", price: 170, tags: [], prepTime: 15 },
+        { name: "Steamed Veg Momo (6pc)", desc: "Mixed vegetable filling, sesame dipping sauce", price: 120, tags: ["vegetarian"], prepTime: 12 },
+        { name: "Jhol Momo (6pc)", desc: "Steamed momo in spicy sesame broth", price: 180, tags: [], prepTime: 18 },
+      ]},
+      { name: "Nachos", items: [
+        { name: "Classic Nachos", desc: "Tortilla chips, nacho cheese, jalapeños, salsa, sour cream", price: 200, tags: ["vegetarian"], prepTime: 8 },
+        { name: "Loaded Nachos", desc: "Chips, pulled chicken, cheese, guac, all toppings", price: 280, tags: [], prepTime: 10 },
+        { name: "BBQ Chicken Nachos", desc: "Smoky BBQ chicken, cheddar melt, pickled red onion", price: 300, tags: [], prepTime: 10 },
+      ]},
+      { name: "Roll Ice Cream", items: [
+        { name: "Mango Roll Ice Cream", desc: "Fresh mango rolled ice cream, mango pieces, condensed milk", price: 180, tags: ["vegetarian"], prepTime: 8 },
+        { name: "Oreo Roll Ice Cream", desc: "Vanilla base, Oreo crumble, chocolate drizzle", price: 200, tags: ["vegetarian"], prepTime: 8 },
+        { name: "Strawberry Cheesecake Roll", desc: "Strawberry ice cream rolls, cheesecake bits", price: 210, tags: ["vegetarian"], prepTime: 8 },
+        { name: "Nutella Roll Ice Cream", desc: "Chocolate-hazelnut base, hazelnut crunch", price: 220, tags: ["vegetarian"], prepTime: 8 },
+      ]},
+      { name: "Fuchka & All", items: [
+        { name: "Fuchka (8pc)", desc: "Crispy puris filled with spiced potato, tamarind water", price: 60, tags: ["vegan"], prepTime: 5 },
+        { name: "Chotpoti", desc: "Chickpeas, boiled egg, potato, tamarind sauce, green chilli", price: 80, tags: ["vegetarian"], prepTime: 5 },
+        { name: "Jhalmuri", desc: "Puffed rice, mustard oil, fresh veggies, spice mix", price: 50, tags: ["vegan"], prepTime: 3 },
+        { name: "Dahi Fuchka (8pc)", desc: "Fuchka with sweetened yoghurt, tamarind, boondi", price: 80, tags: ["vegetarian"], prepTime: 5 },
+      ]},
+      { name: "Pudding & Dessert", items: [
+        { name: "Chocolate Pudding", desc: "Silky dark chocolate custard, gold leaf garnish", price: 120, tags: ["vegetarian"], prepTime: 3 },
+        { name: "Caramel Pudding", desc: "Classic crème caramel, burnt sugar top", price: 100, tags: ["vegetarian"], prepTime: 3 },
+        { name: "Bread Pudding", desc: "Brioche pudding, vanilla custard, raisins", price: 110, tags: ["vegetarian"], prepTime: 5 },
+        { name: "Tiramisu", desc: "Espresso-soaked ladyfingers, mascarpone cream", price: 180, tags: ["vegetarian"], prepTime: 3 },
+      ]},
+      { name: "Cake & Pastry", items: [
+        { name: "Chocolate Cake Slice", desc: "3-layer dark chocolate cake, ganache frosting", price: 150, tags: ["vegetarian"], prepTime: 3 },
+        { name: "Red Velvet Slice", desc: "Moist red velvet, cream cheese frosting", price: 180, tags: ["vegetarian"], prepTime: 3 },
+        { name: "Cheesecake Slice", desc: "New York baked cheesecake, berry compote", price: 200, tags: ["vegetarian"], prepTime: 3 },
+        { name: "Croissant", desc: "Butter croissant, plain or almond filled", price: 120, tags: ["vegetarian"], prepTime: 2 },
+        { name: "Brownie", desc: "Fudgy walnut brownie, served warm with ice cream", price: 130, tags: ["vegetarian"], prepTime: 3 },
+      ]},
+      { name: "Tea", items: [
+        { name: "Milk Tea", desc: "Strong Sylhet CTC brew, full-cream milk, sugar", price: 60, tags: ["vegetarian"], prepTime: 5 },
+        { name: "Masala Chai", desc: "Spiced tea — ginger, cardamom, cinnamon, clove", price: 70, tags: ["vegetarian"], prepTime: 5 },
+        { name: "Lemon Tea", desc: "Darjeeling tea, lemon wedge, honey", price: 50, tags: ["vegan"], prepTime: 4 },
+        { name: "Green Tea", desc: "Jasmine green tea, served hot or iced", price: 60, tags: ["vegan"], prepTime: 4 },
+      ]},
+      { name: "Drinks", items: [
+        { name: "Coke", desc: "Chilled Coca-Cola, 330ml can", price: 60, tags: ["vegan"], prepTime: 1 },
+        { name: "Sprite", desc: "Chilled Sprite, 330ml can", price: 60, tags: ["vegan"], prepTime: 1 },
+        { name: "Mineral Water", desc: "Still mineral water, 500ml", price: 30, tags: ["vegan", "gluten_free"], prepTime: 1 },
+        { name: "Sparkling Water", desc: "Perrier sparkling mineral water, 330ml", price: 80, tags: ["vegan", "gluten_free"], prepTime: 1 },
+        { name: "Lassi", desc: "Sweet or salted yoghurt drink, chilled", price: 90, tags: ["vegetarian"], prepTime: 3 },
+      ]},
+      { name: "Ice Cream", items: [
+        { name: "Vanilla Cone", desc: "Single scoop vanilla in a crispy waffle cone", price: 80, tags: ["vegetarian"], prepTime: 2 },
+        { name: "Chocolate Bar", desc: "Milk chocolate ice cream bar, dark chocolate coating", price: 60, tags: ["vegetarian"], prepTime: 1 },
+        { name: "Strawberry Scoop", desc: "Double scoop strawberry in a cup", price: 100, tags: ["vegetarian"], prepTime: 2 },
+        { name: "Sundae", desc: "3 scoops, hot fudge, sprinkles, whipped cream, cherry", price: 180, tags: ["vegetarian"], prepTime: 5 },
+        { name: "Kulfi (2pc)", desc: "Traditional pistachio kulfi on a stick", price: 100, tags: ["vegetarian"], prepTime: 1 },
+      ]},
+    ],
+  },
 };
 
 async function main() {
@@ -291,6 +420,60 @@ async function main() {
     console.log(`✅ ${vd.name} seeded`);
   }
 
+  // Food Port — size modifier + spice level modifier
+  const foodPortVendor = await prisma.vendor.findUnique({ where: { slug: 'food-port' } });
+  if (foodPortVendor) {
+    const existingSpice = await prisma.modifierGroup.findFirst({ where: { vendor_id: foodPortVendor.id, name: 'Spice Level' } });
+    if (!existingSpice) {
+      await prisma.modifierGroup.create({
+        data: {
+          vendor_id: foodPortVendor.id,
+          name: 'Spice Level',
+          is_required: false,
+          min_selections: 0,
+          max_selections: 1,
+          modifiers: {
+            create: [
+              { name: 'Mild', price_adjustment: 0, sort_order: 0 },
+              { name: 'Medium', price_adjustment: 0, sort_order: 1 },
+              { name: 'Hot 🌶', price_adjustment: 0, sort_order: 2 },
+              { name: 'Extra Hot 🔥', price_adjustment: 10, sort_order: 3 },
+            ],
+          },
+        },
+      });
+    }
+    const existingSize = await prisma.modifierGroup.findFirst({ where: { vendor_id: foodPortVendor.id, name: 'Size Upgrade' } });
+    if (!existingSize) {
+      await prisma.modifierGroup.create({
+        data: {
+          vendor_id: foodPortVendor.id,
+          name: 'Size Upgrade',
+          is_required: false,
+          min_selections: 0,
+          max_selections: 1,
+          modifiers: {
+            create: [
+              { name: 'Regular', price_adjustment: 0, sort_order: 0 },
+              { name: 'Large (+50 BDT)', price_adjustment: 50, sort_order: 1 },
+              { name: 'XL (+100 BDT)', price_adjustment: 100, sort_order: 2 },
+            ],
+          },
+        },
+      });
+    }
+    // Staff PIN for Food Port kitchen
+    const fpPinHash = await bcrypt.hash('pin:5678', 10);
+    const existingFpPin = await prisma.staffPin.findFirst({ where: { vendor_id: foodPortVendor.id, label: 'Food Port Kitchen' } });
+    if (!existingFpPin) {
+      await prisma.staffPin.create({
+        data: { vendor_id: foodPortVendor.id, pin_hash: fpPinHash, label: 'Food Port Kitchen', role: 'vendor_kitchen' },
+      });
+      console.log('✅ Staff PIN created for Food Port (PIN: 5678)');
+    }
+    console.log('✅ Food Port modifiers + staff PIN seeded');
+  }
+
   // Staff PIN for Burger Barn kitchen
   const pinHash = await bcrypt.hash('1234', 10);
   const burgerVendor = await prisma.vendor.findUnique({ where: { slug: 'burger-barn' } });
@@ -348,7 +531,7 @@ async function main() {
   console.log('✅ Vendor manager accounts seeded (booth1–10@foodvillage.com / vendor123)');
 
   console.log('\n🎉 Seed complete!');
-  console.log('  • 10 vendors with menus');
+  console.log('  • 11 vendors with menus (incl. Food Port with BDT pricing)');
   console.log('  • 20 tables');
   console.log('  • 1 food village config');
   console.log('  • Super admin: admin@foodvillage.com / admin123');

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { apiFetch } from '@/lib/api';
 import { useCartStore } from '@/store/cartStore';
 import { useUIStore } from '@/store/uiStore';
@@ -11,6 +11,36 @@ import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import PageTransition from '@/components/ui/PageTransition';
+
+function ImageZoomOverlay({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4"
+        onClick={onClose}
+      >
+        <motion.img
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.8, opacity: 0 }}
+          src={src}
+          alt={alt}
+          className="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        />
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-white/70 hover:text-white text-3xl leading-none"
+        >
+          ×
+        </button>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
 // Types matching actual public menu API response shape
 interface PubItemSummary {
@@ -271,6 +301,7 @@ function ItemDetailModal({ item, vendor, onClose, onAdd }: ItemDetailModalProps)
   const [selectedModifiers, setSelectedModifiers] = useState<Record<string, string[]>>({});
   const [quantity, setQuantity] = useState(1);
   const [instructions, setInstructions] = useState('');
+  const [zoomImage, setZoomImage] = useState(false);
 
   function toggleModifier(group: ModifierGroup, modifierId: string) {
     setSelectedModifiers((prev) => {
@@ -313,12 +344,21 @@ function ItemDetailModal({ item, vendor, onClose, onAdd }: ItemDetailModalProps)
 
   return (
     <Modal isOpen onClose={onClose} size="lg">
+      {zoomImage && item.image_url && (
+        <ImageZoomOverlay src={item.image_url} alt={item.name} onClose={() => setZoomImage(false)} />
+      )}
       <div
-        className="h-44 w-full flex items-center justify-center text-6xl"
+        className="h-44 w-full flex items-center justify-center text-6xl relative cursor-pointer group"
         style={{ backgroundColor: `${vendor.booth_color}18` }}
+        onClick={() => item.image_url && setZoomImage(true)}
       >
         {item.image_url ? (
-          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+          <>
+            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <span className="text-white text-sm font-semibold bg-black/50 px-3 py-1 rounded-full">Tap to zoom</span>
+            </div>
+          </>
         ) : '🍽️'}
       </div>
 

@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { apiFetch, apiPost, apiPatch, apiDelete } from '@/lib/api';
 import { useUIStore } from '@/store/uiStore';
 import type { AdminVendor } from '@/types';
@@ -128,8 +129,11 @@ export default function AdminVendorsPage() {
               </div>
 
               <div className="flex gap-2">
-                <Button size="sm" variant="secondary" onClick={() => setEditVendor(vendor)} className="flex-1">Edit</Button>
-                <Button size="sm" variant="secondary" onClick={() => loadStaff(vendor)} className="flex-1">Staff</Button>
+                <Link href={`/admin/vendors/${vendor.id}`} className="flex-1">
+                  <Button size="sm" variant="secondary" className="w-full">Detail</Button>
+                </Link>
+                <Button size="sm" variant="secondary" onClick={() => setEditVendor(vendor)}>Edit</Button>
+                <Button size="sm" variant="secondary" onClick={() => loadStaff(vendor)}>Staff</Button>
                 <Button
                   size="sm"
                   variant={vendor.status === 'suspended' ? 'secondary' : 'danger'}

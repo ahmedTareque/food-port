@@ -85,4 +85,14 @@ export declare class MenuController {
             }[];
         }[];
     }>;
+    validatePromo(body: {
+        code: string;
+        subtotal: number;
+    }): Promise<{
+        promotion_id: string;
+        code: string;
+        type: string;
+        value: number;
+        discount_amount: number;
+    }>;
 }

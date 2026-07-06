@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AdminService } from './admin.service';
 import { JwtUser } from '../../common/decorators/current-user.decorator';
-import { CreateVendorDto, UpdateVendorDto, VendorStatusDto, UpdateOrderStatusDto, CancelOrderDto, CreatePromotionDto, UpdatePromotionDto, ValidatePromoDto, CashLogDto } from './dto/admin.dto';
+import { CreateVendorDto, UpdateVendorDto, VendorStatusDto, CreateStaffDto, UpdateOrderStatusDto, CancelOrderDto, CreatePromotionDto, UpdatePromotionDto, ValidatePromoDto, CashLogDto, CreateUserDto, UpdateUserDto, SystemSettingsDto } from './dto/admin.dto';
 export declare class AdminController {
     private adminService;
     constructor(adminService: AdminService);
@@ -80,8 +80,8 @@ export declare class AdminController {
                     booth_color: string;
                 };
                 status: import(".prisma/client").$Enums.OrderItemStatus;
-                item_name: string;
                 quantity: number;
+                item_name: string;
                 total_price: number;
             }[];
             created_at: Date;
@@ -101,8 +101,8 @@ export declare class AdminController {
                 is_active: boolean;
                 created_at: Date;
                 updated_at: Date;
-                type: string;
                 code: string;
+                type: string;
                 value: number;
                 min_order_amount: number | null;
                 max_uses: number | null;
@@ -125,9 +125,9 @@ export declare class AdminController {
             };
             modifiers: {
                 id: string;
+                modifier_id: string;
                 quantity: number;
                 order_item_id: string;
-                modifier_id: string;
                 modifier_name: string;
                 price_at_order: number;
             }[];
@@ -138,13 +138,13 @@ export declare class AdminController {
             updated_at: Date;
             status: import(".prisma/client").$Enums.OrderItemStatus;
             menu_item_id: string;
+            quantity: number;
+            special_instructions: string | null;
             order_id: string;
             item_name: string;
-            quantity: number;
             unit_price: number;
             modifier_price: number;
             total_price: number;
-            special_instructions: string | null;
             estimated_prep_time: number;
             accepted_at: Date | null;
             preparing_at: Date | null;
@@ -169,10 +169,11 @@ export declare class AdminController {
         status: import(".prisma/client").$Enums.OrderStatus;
         table_id: string;
         waiter_id: string | null;
+        session_id: string | null;
         idempotency_key: string;
+        special_notes: string | null;
         token_number: number;
         token_date: string;
-        session_id: string | null;
         payment_method: string;
         payment_status: string;
         subtotal: number;
@@ -186,10 +187,11 @@ export declare class AdminController {
         status: import(".prisma/client").$Enums.OrderStatus;
         table_id: string;
         waiter_id: string | null;
+        session_id: string | null;
         idempotency_key: string;
+        special_notes: string | null;
         token_number: number;
         token_date: string;
-        session_id: string | null;
         payment_method: string;
         payment_status: string;
         subtotal: number;
@@ -270,6 +272,111 @@ export declare class AdminController {
     removeStaff(user: JwtUser, vendorId: string, userId: string): Promise<{
         success: boolean;
     }>;
+    createStaffForVendor(user: JwtUser, id: string, dto: CreateStaffDto): Promise<{
+        email: string;
+        role: import(".prisma/client").$Enums.UserRole;
+        id: string;
+        full_name: string;
+        is_active: boolean;
+    }>;
+    getVendorDetail(id: string): Promise<{
+        staffPins: {
+            role: import(".prisma/client").$Enums.UserRole;
+            id: string;
+            is_active: boolean;
+            label: string;
+        }[];
+        stats: {
+            orders_today: number;
+            total_orders: number;
+            total_revenue: number;
+        };
+        users: {
+            email: string;
+            role: import(".prisma/client").$Enums.UserRole;
+            id: string;
+            full_name: string;
+            is_active: boolean;
+        }[];
+        categories: ({
+            items: {
+                id: string;
+                name: string;
+                is_available: boolean;
+                price: number;
+            }[];
+        } & {
+            id: string;
+            vendor_id: string;
+            is_active: boolean;
+            created_at: Date;
+            updated_at: Date;
+            name: string;
+            slug: string;
+            sort_order: number;
+        })[];
+        id: string;
+        created_at: Date;
+        updated_at: Date;
+        name: string;
+        slug: string;
+        booth_number: number;
+        cuisine_type: string;
+        booth_color: string;
+        logo_url: string | null;
+        avg_prep_time_minutes: number;
+        status: import(".prisma/client").$Enums.VendorStatus;
+        is_accepting_orders: boolean;
+        operating_hours: import("@prisma/client/runtime/library").JsonValue | null;
+        notification_prefs: import("@prisma/client/runtime/library").JsonValue | null;
+    }>;
+    getUsers(role?: string, page?: string, limit?: string): Promise<{
+        users: {
+            email: string;
+            role: import(".prisma/client").$Enums.UserRole;
+            id: string;
+            full_name: string;
+            vendor_id: string | null;
+            is_active: boolean;
+            created_at: Date;
+            vendor: {
+                name: string;
+                booth_number: number;
+            } | null;
+        }[];
+        total: number;
+        page: number;
+        pages: number;
+    }>;
+    createUser(user: JwtUser, dto: CreateUserDto): Promise<{
+        email: string;
+        role: import(".prisma/client").$Enums.UserRole;
+        id: string;
+        full_name: string;
+        is_active: boolean;
+        created_at: Date;
+    }>;
+    updateUser(user: JwtUser, id: string, dto: UpdateUserDto): Promise<{
+        email: string;
+        role: import(".prisma/client").$Enums.UserRole;
+        id: string;
+        full_name: string;
+        is_active: boolean;
+    }>;
+    getSystemSettings(): Promise<{
+        id: string;
+        created_at: Date;
+        updated_at: Date;
+        name: string;
+        logo_url: string | null;
+        tagline: string | null;
+        address: string | null;
+        tax_rate: number;
+    } | {
+        name: string;
+        tax_rate: number;
+    }>;
+    updateSystemSettings(user: JwtUser, dto: SystemSettingsDto): Promise<any>;
     getDailySummary(from?: string, to?: string): Promise<{
         total_orders: number;
         gross_revenue: number;
@@ -285,7 +392,7 @@ export declare class AdminController {
         tax: number;
         net: number;
     }[]>;
-    getCashLog(date?: string, page?: string, limit?: string): Promise<{
+    getCashLog(date?: string, page?: string, limit?: string, from?: string, to?: string): Promise<{
         logs: {
             id: string;
             order_id: string;
@@ -304,8 +411,8 @@ export declare class AdminController {
         created_at: Date;
         order_id: string;
         amount: number;
-        collected_by: string;
         notes: string | null;
+        collected_by: string;
     }>;
     exportFinance(from: string | undefined, to: string | undefined, res: Response): Promise<void>;
     getPromotions(active?: string, page?: string, limit?: string): Promise<{
@@ -315,8 +422,8 @@ export declare class AdminController {
             is_active: boolean;
             created_at: Date;
             updated_at: Date;
-            type: string;
             code: string;
+            type: string;
             value: number;
             min_order_amount: number | null;
             max_uses: number | null;
@@ -334,8 +441,8 @@ export declare class AdminController {
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
-        type: string;
         code: string;
+        type: string;
         value: number;
         min_order_amount: number | null;
         max_uses: number | null;
@@ -349,8 +456,8 @@ export declare class AdminController {
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
-        type: string;
         code: string;
+        type: string;
         value: number;
         min_order_amount: number | null;
         max_uses: number | null;
@@ -419,8 +526,8 @@ export declare class PromotionsPublicController {
             is_active: boolean;
             created_at: Date;
             updated_at: Date;
-            type: string;
             code: string;
+            type: string;
             value: number;
             min_order_amount: number | null;
             max_uses: number | null;

@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CashLogDto = exports.ValidatePromoDto = exports.UpdatePromotionDto = exports.CreatePromotionDto = exports.CancelOrderDto = exports.UpdateOrderStatusDto = exports.CreateStaffDto = exports.VendorStatusDto = exports.UpdateVendorDto = exports.CreateVendorDto = void 0;
+exports.SystemSettingsDto = exports.UpdateUserDto = exports.CreateUserDto = exports.CashLogDto = exports.ValidatePromoDto = exports.UpdatePromotionDto = exports.CreatePromotionDto = exports.CancelOrderDto = exports.UpdateOrderStatusDto = exports.CreateStaffDto = exports.VendorStatusDto = exports.UpdateVendorDto = exports.CreateVendorDto = void 0;
 const class_validator_1 = require("class-validator");
 class CreateVendorDto {
 }
@@ -225,4 +225,74 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CashLogDto.prototype, "notes", void 0);
+class CreateUserDto {
+}
+exports.CreateUserDto = CreateUserDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "full_name", void 0);
+__decorate([
+    (0, class_validator_1.IsEmail)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "email", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "password", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(['super_admin', 'admin', 'vendor_owner', 'vendor_kitchen', 'vendor_cashier', 'waiter']),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "role", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "vendor_id", void 0);
+class UpdateUserDto {
+}
+exports.UpdateUserDto = UpdateUserDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateUserDto.prototype, "full_name", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(['super_admin', 'admin', 'vendor_owner', 'vendor_kitchen', 'vendor_cashier', 'waiter']),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateUserDto.prototype, "role", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], UpdateUserDto.prototype, "is_active", void 0);
+class SystemSettingsDto {
+}
+exports.SystemSettingsDto = SystemSettingsDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], SystemSettingsDto.prototype, "food_village_name", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], SystemSettingsDto.prototype, "tax_rate", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], SystemSettingsDto.prototype, "default_commission_rate", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], SystemSettingsDto.prototype, "currency", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], SystemSettingsDto.prototype, "timezone", void 0);
 //# sourceMappingURL=admin.dto.js.map

@@ -23,6 +23,11 @@ export class VendorController {
   constructor(private vendorService: VendorService) {}
 
   // ── Dashboard ──────────────────────────────────────────────────────────────
+  @Get('revenue/weekly')
+  getWeeklyRevenue(@CurrentUser() user: JwtUser) {
+    return this.vendorService.getWeeklyRevenue(user);
+  }
+
   @Get('dashboard')
   getDashboard(@CurrentUser() user: JwtUser) {
     return this.vendorService.getDashboard(user);
@@ -41,8 +46,8 @@ export class VendorController {
   }
 
   @Get('orders/:orderId')
-  getOrder(@Param('orderId') orderId: string) {
-    return { orderId }; // Delegates to orders service; minimal stub
+  getOrder(@CurrentUser() user: JwtUser, @Param('orderId') orderId: string) {
+    return this.vendorService.getOrderDetail(user, orderId);
   }
 
   // ── Full structured menu ───────────────────────────────────────────────────
@@ -80,6 +85,12 @@ export class VendorController {
     return this.vendorService.deleteMenuItem(user, id);
   }
 
+  @Post('menu-items/:id/duplicate')
+  @Roles('vendor_owner', 'admin')
+  duplicateMenuItem(@CurrentUser() user: JwtUser, @Param('id') id: string) {
+    return this.vendorService.duplicateMenuItem(user, id);
+  }
+
   @Patch('menu-items/:id/availability')
   updateAvailability(@CurrentUser() user: JwtUser, @Param('id') id: string, @Body() dto: UpdateAvailabilityDto) {
     return this.vendorService.updateAvailability(user, id, dto);
@@ -101,6 +112,22 @@ export class VendorController {
   @Roles('vendor_owner', 'admin')
   updateCategory(@CurrentUser() user: JwtUser, @Param('id') id: string, @Body() dto: UpdateCategoryDto) {
     return this.vendorService.updateCategory(user, id, dto);
+  }
+
+  @Delete('categories/:id')
+  @Roles('vendor_owner', 'admin')
+  deleteCategory(@CurrentUser() user: JwtUser, @Param('id') id: string) {
+    return this.vendorService.deleteCategory(user, id);
+  }
+
+  @Patch('categories/:id/bulk-availability')
+  @Roles('vendor_owner', 'admin')
+  bulkCategoryAvailability(
+    @CurrentUser() user: JwtUser,
+    @Param('id') id: string,
+    @Body('is_available') is_available: boolean,
+  ) {
+    return this.vendorService.bulkSetCategoryAvailability(user, id, is_available);
   }
 
   // ── Modifier Groups ────────────────────────────────────────────────────────
@@ -161,5 +188,52 @@ export class VendorController {
   @Patch('status')
   updateStatus(@CurrentUser() user: JwtUser, @Body() dto: UpdateVendorStatusDto) {
     return this.vendorService.updateStatus(user, dto);
+  }
+
+  // ── Staff PINs ─────────────────────────────────────────────────────────────
+  @Get('staff-pins')
+  @Roles('vendor_owner', 'admin')
+  listStaffPins(@CurrentUser() user: JwtUser) {
+    return this.vendorService.listStaffPins(user);
+  }
+
+  @Post('staff-pins')
+  @Roles('vendor_owner', 'admin')
+  createStaffPin(@CurrentUser() user: JwtUser, @Body('label') label: string, @Body('pin') pin: string) {
+    return this.vendorService.createStaffPin(user, label, pin);
+  }
+
+  @Patch('staff-pins/:id/toggle')
+  @Roles('vendor_owner', 'admin')
+  toggleStaffPin(@CurrentUser() user: JwtUser, @Param('id') id: string, @Body('is_active') is_active: boolean) {
+    return this.vendorService.toggleStaffPin(user, id, is_active);
+  }
+
+  @Delete('staff-pins/:id')
+  @Roles('vendor_owner', 'admin')
+  deleteStaffPin(@CurrentUser() user: JwtUser, @Param('id') id: string) {
+    return this.vendorService.deleteStaffPin(user, id);
+  }
+
+  // ── Payout Summary ─────────────────────────────────────────────────────────
+  @Get('payout/summary')
+  getPayoutSummary(@CurrentUser() user: JwtUser) {
+    return this.vendorService.getPayoutSummary(user);
+  }
+
+  // ── Reports ────────────────────────────────────────────────────────────────
+  @Get('reports/sales')
+  getSalesReport(@CurrentUser() user: JwtUser, @Query('from') from?: string, @Query('to') to?: string) {
+    return this.vendorService.getSalesReport(user, from, to);
+  }
+
+  @Get('reports/top-items')
+  getTopItemsReport(@CurrentUser() user: JwtUser, @Query('from') from?: string, @Query('to') to?: string, @Query('limit') limit?: string) {
+    return this.vendorService.getTopItemsReport(user, from, to, limit ? parseInt(limit) : 10);
+  }
+
+  @Get('reports/peak-hours')
+  getPeakHoursReport(@CurrentUser() user: JwtUser, @Query('from') from?: string, @Query('to') to?: string) {
+    return this.vendorService.getPeakHoursReport(user, from, to);
   }
 }

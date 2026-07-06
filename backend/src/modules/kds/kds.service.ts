@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Optional } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { OrdersService } from '../orders/orders.service';
+import { KdsGateway } from './kds.gateway';
 import { RejectItemDto } from './dto/reject-item.dto';
 import { OrderItemStatus } from '@prisma/client';
 import { JwtUser } from '../../common/decorators/current-user.decorator';
@@ -10,6 +11,7 @@ export class KdsService {
   constructor(
     private prisma: PrismaService,
     private ordersService: OrdersService,
+    @Optional() private kdsGateway: KdsGateway,
   ) {}
 
   async getOrders(user: JwtUser) {
@@ -91,7 +93,9 @@ export class KdsService {
     });
     const tableMap = Object.fromEntries(tables.map((t) => [t.id, t.table_number]));
 
-    return this.formatCard(updated, tableMap);
+    const card = this.formatCard(updated, tableMap);
+    this.kdsGateway?.emitOrderUpdate(updated.vendor_id, card);
+    return card;
   }
 
   async getQueueStats(user: JwtUser) {
@@ -114,10 +118,14 @@ export class KdsService {
       ? Math.round((Date.now() - queueItems[0].created_at.getTime()) / 60000)
       : 0;
 
+    const avgWaitMinutes = queueItems.length > 0
+      ? Math.round(queueItems.reduce((sum, i) => sum + (Date.now() - i.created_at.getTime()) / 60000, 0) / queueItems.length)
+      : 0;
+
     return {
       vendor_id: vendorId,
       queue_depth: queueItems.length,
-      avg_prep_time_minutes: Math.round(avgResult._avg.estimated_prep_time ?? 10),
+      avg_wait_minutes: avgWaitMinutes,
       oldest_pending_minutes: oldestMinutes,
     };
   }

@@ -54,6 +54,9 @@ export default function ConfirmationPage() {
   const [order, setOrder] = useState<OrderStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [msgIdx, setMsgIdx] = useState(0);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -200,6 +203,64 @@ export default function ConfirmationPage() {
             </div>
           ))}
         </div>
+
+        <div className="mb-4">
+          <a
+            href={`/order/track/${orderId}`}
+            className="text-brand-orange text-sm hover:underline"
+          >
+            Track this order on another device →
+          </a>
+        </div>
+
+        {/* Rating section */}
+        {allReady && (
+          <div className="glass rounded-2xl p-4 mb-6 text-left">
+            {ratingSubmitted ? (
+              <p className="text-center text-green-400 font-body py-2">Thanks for your feedback! ⭐</p>
+            ) : (
+              <>
+                <h3 className="font-heading text-base text-brand-white tracking-wide mb-3">RATE YOUR ORDER</h3>
+                <div className="flex justify-center gap-2 mb-3">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      onClick={() => setRating(star)}
+                      className="text-3xl transition-transform hover:scale-110"
+                      style={{ color: star <= rating ? '#FF6B35' : '#444' }}
+                    >
+                      ★
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Any comments? (optional)"
+                  rows={2}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-chrome placeholder-brand-dim resize-none focus:outline-none focus:border-brand-orange/50 mb-3"
+                />
+                <button
+                  disabled={rating === 0}
+                  onClick={async () => {
+                    if (!rating) return;
+                    try {
+                      await apiFetch(`/orders/${orderId}/rate`, {
+                        method: 'POST',
+                        body: JSON.stringify({ rating, comment }),
+                      });
+                      setRatingSubmitted(true);
+                    } catch {}
+                  }}
+                  className="w-full py-2 rounded-xl font-heading text-sm tracking-wide transition-colors disabled:opacity-40"
+                  style={{ background: rating ? '#FF6B35' : '#333', color: '#fff' }}
+                >
+                  SUBMIT RATING
+                </button>
+              </>
+            )}
+          </div>
+        )}
 
         <button
           onClick={() => router.push('/order')}

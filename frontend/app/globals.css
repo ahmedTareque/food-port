@@ -79,3 +79,16 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #ff5c00;
 }
+
+/* Accessibility mode */
+.a11y-mode {
+  --text-scale: 1.1;
+}
+.a11y-mode * {
+  letter-spacing: 0.01em;
+}
+.a11y-mode button,
+.a11y-mode a {
+  min-height: 48px;
+  min-width: 48px;
+}
