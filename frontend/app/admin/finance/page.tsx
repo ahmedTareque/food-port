@@ -54,7 +54,7 @@ export default function AdminFinancePage() {
           href={`${process.env.NEXT_PUBLIC_API_URL}/admin/finance/export?from=${from}&to=${to}`}
           target="_blank"
           rel="noreferrer"
-          className="px-4 py-2 rounded-xl border border-white/10 text-xs text-brand-dim hover:text-brand-white hover:border-white/20 transition-all font-semibold uppercase tracking-wider"
+          className="px-4 py-2 rounded-xl border border-black/10 text-xs text-brand-dim hover:text-brand-white hover:border-black/20 transition-all font-semibold uppercase tracking-wider"
         >
           Export CSV
         </a>
@@ -62,9 +62,9 @@ export default function AdminFinancePage() {
 
       {/* Date range */}
       <div className="flex gap-3 items-center mb-6">
-        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="bg-brand-card border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
+        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="bg-brand-card border border-black/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
         <span className="text-brand-dim">to</span>
-        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="bg-brand-card border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
+        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="bg-brand-card border border-black/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
       </div>
 
       {/* Summary cards */}
@@ -102,7 +102,7 @@ export default function AdminFinancePage() {
           {tab === 0 && (
             <GlassCard className="overflow-auto">
               <table className="w-full text-sm">
-                <thead className="border-b border-white/6">
+                <thead className="border-b border-black/6">
                   <tr className="text-brand-dim text-xs uppercase tracking-wider">
                     {['Date', 'Orders', 'Gross', 'Tax', 'Net'].map((h) => (
                       <th key={h} className="text-left px-5 py-3">{h}</th>
@@ -111,7 +111,7 @@ export default function AdminFinancePage() {
                 </thead>
                 <tbody className="divide-y divide-white/4">
                   {daily.map((d) => (
-                    <tr key={d.date} className="hover:bg-white/2 transition-colors">
+                    <tr key={d.date} className="hover:bg-black/2 transition-colors">
                       <td className="px-5 py-3 font-mono text-brand-dim text-xs">{d.date}</td>
                       <td className="px-5 py-3 text-brand-white">{d.total_orders}</td>
                       <td className="px-5 py-3 font-mono text-brand-yellow">${d.gross_revenue.toFixed(2)}</td>
@@ -128,7 +128,7 @@ export default function AdminFinancePage() {
           {tab === 1 && (
             <GlassCard className="overflow-auto">
               <table className="w-full text-sm">
-                <thead className="border-b border-white/6">
+                <thead className="border-b border-black/6">
                   <tr className="text-brand-dim text-xs uppercase tracking-wider">
                     {['Vendor', 'Orders', 'Revenue', 'Tax', 'Net'].map((h) => (
                       <th key={h} className="text-left px-5 py-3">{h}</th>
@@ -137,7 +137,7 @@ export default function AdminFinancePage() {
                 </thead>
                 <tbody className="divide-y divide-white/4">
                   {byVendor.map((v) => (
-                    <tr key={v.vendor_id} className="hover:bg-white/2 transition-colors">
+                    <tr key={v.vendor_id} className="hover:bg-black/2 transition-colors">
                       <td className="px-5 py-3 text-brand-white font-semibold">{v.vendor_name}</td>
                       <td className="px-5 py-3 text-brand-chrome">{v.orders}</td>
                       <td className="px-5 py-3 font-mono text-brand-yellow">${v.revenue.toFixed(2)}</td>
@@ -158,7 +158,7 @@ export default function AdminFinancePage() {
               </div>
               <GlassCard className="overflow-auto">
                 <table className="w-full text-sm">
-                  <thead className="border-b border-white/6">
+                  <thead className="border-b border-black/6">
                     <tr className="text-brand-dim text-xs uppercase tracking-wider">
                       {['Token', 'Amount', 'Collected By', 'Notes', 'Time'].map((h) => (
                         <th key={h} className="text-left px-5 py-3">{h}</th>
@@ -167,7 +167,7 @@ export default function AdminFinancePage() {
                   </thead>
                   <tbody className="divide-y divide-white/4">
                     {(cashLog?.logs ?? []).map((l) => (
-                      <tr key={l.id} className="hover:bg-white/2 transition-colors">
+                      <tr key={l.id} className="hover:bg-black/2 transition-colors">
                         <td className="px-5 py-3 font-heading text-xl text-brand-orange">#{String(l.token_number).padStart(3,'0')}</td>
                         <td className="px-5 py-3 font-mono text-brand-yellow">${l.amount.toFixed(2)}</td>
                         <td className="px-5 py-3 text-brand-chrome">{l.collected_by}</td>
@@ -231,7 +231,7 @@ function CashLogModal({ isOpen, onClose, onSaved }: { isOpen: boolean; onClose: 
               placeholder={placeholder}
               type={key === 'amount' ? 'number' : 'text'}
               step={key === 'amount' ? '0.01' : undefined}
-              className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+              className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
             />
           </div>
         ))}

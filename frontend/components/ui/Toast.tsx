@@ -3,10 +3,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useUIStore } from '@/store/uiStore';
 
 const typeStyles = {
-  success: 'border-green-500/40 bg-green-500/10 text-green-300',
-  error: 'border-red-500/40 bg-red-500/10 text-red-300',
-  warning: 'border-yellow-500/40 bg-yellow-500/10 text-yellow-300',
-  info: 'border-blue-500/40 bg-blue-500/10 text-blue-300',
+  success: 'border-brand-orange/40 bg-brand-primary-light text-emerald-700',
+  error: 'border-brand-danger/40 bg-brand-danger-light text-red-700',
+  warning: 'border-amber-400/50 bg-amber-50 text-amber-700',
+  info: 'border-brand-info/40 bg-blue-50 text-blue-700',
 };
 
 const typeIcons = {

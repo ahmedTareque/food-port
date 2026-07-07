@@ -65,10 +65,10 @@ export default function VendorReportsPage() {
         <h1 className="font-heading text-4xl text-brand-white tracking-widest">REPORTS</h1>
         <div className="flex gap-2 items-center">
           <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
-            className="bg-brand-card border border-white/10 rounded-lg px-3 py-1.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/50" />
+            className="bg-brand-card border border-black/10 rounded-lg px-3 py-1.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/50" />
           <span className="text-brand-dim text-sm">to</span>
           <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
-            className="bg-brand-card border border-white/10 rounded-lg px-3 py-1.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/50" />
+            className="bg-brand-card border border-black/10 rounded-lg px-3 py-1.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/50" />
           {[7, 30, 90].map((d) => (
             <button key={d} onClick={() => { setFrom(dateOffset(d - 1)); setTo(dateOffset(0)); }}
               className="px-3 py-1.5 text-xs font-semibold bg-brand-card text-brand-dim hover:text-brand-white rounded-lg transition-colors">
@@ -136,7 +136,7 @@ export default function VendorReportsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-brand-dim text-xs uppercase tracking-wider border-b border-white/6">
+                  <tr className="text-brand-dim text-xs uppercase tracking-wider border-b border-black/6">
                     <th className="text-left py-2 pr-4">Date</th>
                     <th className="text-right py-2 pr-4">Orders</th>
                     <th className="text-right py-2">Revenue</th>
@@ -144,7 +144,7 @@ export default function VendorReportsPage() {
                 </thead>
                 <tbody className="divide-y divide-white/4">
                   {[...sales.days].reverse().map((d) => (
-                    <tr key={d.date} className="hover:bg-white/2 transition-colors">
+                    <tr key={d.date} className="hover:bg-black/2 transition-colors">
                       <td className="py-2 pr-4 font-mono text-brand-chrome">{d.date}</td>
                       <td className="py-2 pr-4 text-right text-brand-white">{d.orders}</td>
                       <td className="py-2 text-right font-mono text-brand-yellow">${d.revenue.toFixed(2)}</td>

@@ -121,7 +121,7 @@ export default function OrderHistoryPage() {
                 </div>
               ))}
             </div>
-            <div className="flex items-center justify-between pt-3 border-t border-white/10">
+            <div className="flex items-center justify-between pt-3 border-t border-black/10">
               <span className="font-heading text-brand-dim">TOTAL</span>
               <span className="font-heading text-xl text-brand-orange">${selectedOrder.total.toFixed(2)}</span>
             </div>
@@ -135,7 +135,7 @@ export default function OrderHistoryPage() {
           value={tokenSearch}
           onChange={(e) => setTokenSearch(e.target.value)}
           placeholder="Search by token # (e.g. 42)…"
-          className="bg-brand-bg border border-white/10 rounded-xl px-4 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 w-full max-w-xs"
+          className="bg-brand-bg border border-black/10 rounded-xl px-4 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 w-full max-w-xs"
         />
       </div>
 
@@ -148,7 +148,7 @@ export default function OrderHistoryPage() {
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${
               statusFilter === s
                 ? 'bg-brand-orange text-white'
-                : 'bg-brand-card text-brand-dim border border-white/8 hover:text-brand-white'
+                : 'bg-brand-card text-brand-dim border border-black/8 hover:text-brand-white'
             }`}
           >
             {s || 'All'}
@@ -163,7 +163,7 @@ export default function OrderHistoryPage() {
           <>
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/6 text-xs text-brand-dim uppercase tracking-wider">
+                <tr className="border-b border-black/6 text-xs text-brand-dim uppercase tracking-wider">
                   <th className="px-4 py-3 text-left">Token</th>
                   <th className="px-4 py-3 text-left">Table</th>
                   <th className="px-4 py-3 text-right">Items</th>
@@ -174,7 +174,7 @@ export default function OrderHistoryPage() {
               </thead>
               <tbody className="divide-y divide-white/4">
                 {orders.filter((o) => !tokenSearch || String(o.token_number).includes(tokenSearch)).map((order) => (
-                  <tr key={order.id} className="hover:bg-white/2 transition-colors cursor-pointer" onClick={() => openOrder(order.id)}>
+                  <tr key={order.id} className="hover:bg-black/2 transition-colors cursor-pointer" onClick={() => openOrder(order.id)}>
                     <td className="px-4 py-3 font-heading text-xl text-brand-orange">
                       #{String(order.token_number).padStart(3, '0')}
                     </td>
@@ -210,7 +210,7 @@ export default function OrderHistoryPage() {
             </table>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between px-4 py-3 border-t border-white/6">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-black/6">
               <span className="text-xs text-brand-dim font-mono">
                 {total} orders total
               </span>
@@ -218,14 +218,14 @@ export default function OrderHistoryPage() {
                 <button
                   disabled={page === 1}
                   onClick={() => setPage((p) => p - 1)}
-                  className="px-3 py-1.5 rounded-lg text-xs bg-brand-card text-brand-dim border border-white/8 disabled:opacity-40 hover:text-brand-white"
+                  className="px-3 py-1.5 rounded-lg text-xs bg-brand-card text-brand-dim border border-black/8 disabled:opacity-40 hover:text-brand-white"
                 >
                   Previous
                 </button>
                 <button
                   disabled={page * LIMIT >= total}
                   onClick={() => setPage((p) => p + 1)}
-                  className="px-3 py-1.5 rounded-lg text-xs bg-brand-card text-brand-dim border border-white/8 disabled:opacity-40 hover:text-brand-white"
+                  className="px-3 py-1.5 rounded-lg text-xs bg-brand-card text-brand-dim border border-black/8 disabled:opacity-40 hover:text-brand-white"
                 >
                   Next
                 </button>

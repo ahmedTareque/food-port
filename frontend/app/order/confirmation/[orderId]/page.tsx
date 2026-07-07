@@ -238,7 +238,7 @@ export default function ConfirmationPage() {
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Any comments? (optional)"
                   rows={2}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-chrome placeholder-brand-dim resize-none focus:outline-none focus:border-brand-orange/50 mb-3"
+                  className="w-full bg-black/5 border border-black/10 rounded-lg px-3 py-2 text-sm text-brand-chrome placeholder-brand-dim resize-none focus:outline-none focus:border-brand-orange/50 mb-3"
                 />
                 <button
                   disabled={rating === 0}

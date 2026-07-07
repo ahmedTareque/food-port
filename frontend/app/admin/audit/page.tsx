@@ -100,7 +100,7 @@ function ReviewModal({
     <Modal isOpen onClose={onClose} title="Review Feedback" size="md">
       <div className="p-5 space-y-4">
         {/* Context */}
-        <div className="bg-brand-bg rounded-xl p-4 space-y-2 border border-white/6">
+        <div className="bg-brand-bg rounded-xl p-4 space-y-2 border border-black/6">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-lg">{typeCfg.icon}</span>
             <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ color: typeCfg.color, backgroundColor: `${typeCfg.color}18` }}>
@@ -149,7 +149,7 @@ function ReviewModal({
             maxLength={500}
             rows={3}
             placeholder="Optional note for the vendor..."
-            className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 resize-none"
+            className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 resize-none"
           />
         </div>
 
@@ -240,7 +240,7 @@ function VendorFeedbackPanel() {
       {/* Filters row */}
       <div className="flex gap-2 items-center flex-wrap">
         {/* Month picker */}
-        <div className="flex items-center gap-1 bg-brand-card border border-white/8 rounded-xl px-2 py-1.5">
+        <div className="flex items-center gap-1 bg-brand-card border border-black/8 rounded-xl px-2 py-1.5">
           <button onClick={prevMonth} className="text-brand-dim hover:text-brand-white px-1">‹</button>
           <span className="font-mono text-xs text-brand-chrome min-w-[110px] text-center">{monthLabel(month)}</span>
           <button onClick={nextMonth} disabled={isCurrentMonth} className="text-brand-dim hover:text-brand-white px-1 disabled:opacity-30">›</button>
@@ -249,7 +249,7 @@ function VendorFeedbackPanel() {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="bg-brand-card border border-white/10 rounded-lg px-3 py-2 text-xs text-brand-white focus:outline-none"
+          className="bg-brand-card border border-black/10 rounded-lg px-3 py-2 text-xs text-brand-white focus:outline-none"
         >
           <option value="">All Types</option>
           <option value="complaint">Complaints</option>
@@ -260,7 +260,7 @@ function VendorFeedbackPanel() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-brand-card border border-white/10 rounded-lg px-3 py-2 text-xs text-brand-white focus:outline-none"
+          className="bg-brand-card border border-black/10 rounded-lg px-3 py-2 text-xs text-brand-white focus:outline-none"
         >
           <option value="">All Statuses</option>
           {Object.entries(STATUS_CONFIG).map(([k, v]) => (
@@ -271,7 +271,7 @@ function VendorFeedbackPanel() {
         <select
           value={severityFilter}
           onChange={(e) => setSeverityFilter(e.target.value)}
-          className="bg-brand-card border border-white/10 rounded-lg px-3 py-2 text-xs text-brand-white focus:outline-none"
+          className="bg-brand-card border border-black/10 rounded-lg px-3 py-2 text-xs text-brand-white focus:outline-none"
         >
           <option value="">All Severities</option>
           {Object.entries(SEVERITY_CONFIG).sort(([,a],[,b]) => a.order - b.order).map(([k, v]) => (
@@ -394,7 +394,7 @@ export default function AdminAuditPage() {
         <h1 className="font-heading text-4xl text-brand-white tracking-widest">AUDIT</h1>
 
         {/* Page tab switcher */}
-        <div className="flex gap-1 bg-brand-card border border-white/8 rounded-xl p-1">
+        <div className="flex gap-1 bg-brand-card border border-black/8 rounded-xl p-1">
           {([
             { key: 'system', label: '🔍 System Log' },
             { key: 'feedback', label: '📋 Vendor Feedback' },
@@ -420,13 +420,13 @@ export default function AdminAuditPage() {
         <>
           {/* Filters */}
           <div className="flex gap-3 items-center flex-wrap mb-5">
-            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="bg-brand-card border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
+            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="bg-brand-card border border-black/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
             <span className="text-brand-dim">to</span>
-            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="bg-brand-card border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
+            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="bg-brand-card border border-black/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
             <select
               value={actionFilter}
               onChange={(e) => setActionFilter(e.target.value)}
-              className="bg-brand-card border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+              className="bg-brand-card border border-black/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
             >
               <option value="">All Actions</option>
               {COMMON_ACTIONS.map((a) => <option key={a} value={a}>{a}</option>)}
@@ -439,7 +439,7 @@ export default function AdminAuditPage() {
             <>
               <GlassCard className="overflow-hidden">
                 <table className="w-full text-sm">
-                  <thead className="border-b border-white/6">
+                  <thead className="border-b border-black/6">
                     <tr className="text-brand-dim text-xs uppercase tracking-wider">
                       {['Time', 'Actor', 'Role', 'Action', 'Entity', 'Details'].map((h) => (
                         <th key={h} className="text-left px-4 py-3">{h}</th>
@@ -451,7 +451,7 @@ export default function AdminAuditPage() {
                       <>
                         <tr
                           key={log.id}
-                          className="hover:bg-white/2 transition-colors cursor-pointer"
+                          className="hover:bg-black/2 transition-colors cursor-pointer"
                           onClick={() => setExpanded(expanded === log.id ? null : log.id)}
                         >
                           <td className="px-4 py-3 text-brand-dim text-xs font-mono whitespace-nowrap">

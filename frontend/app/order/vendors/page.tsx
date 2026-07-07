@@ -58,7 +58,7 @@ export default function VendorBrowsingPage() {
             placeholder="Search booths..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-brand-card border border-white/8 rounded-xl pl-9 pr-4 py-3 text-sm text-brand-white placeholder:text-brand-dim focus:outline-none focus:border-brand-orange/50 font-body"
+            className="w-full bg-brand-card border border-black/8 rounded-xl pl-9 pr-4 py-3 text-sm text-brand-white placeholder:text-brand-dim focus:outline-none focus:border-brand-orange/50 font-body"
           />
         </div>
 
@@ -71,7 +71,7 @@ export default function VendorBrowsingPage() {
               className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeFilter === f
                   ? 'bg-brand-orange text-white'
-                  : 'bg-brand-card text-brand-dim border border-white/8 hover:text-brand-white'
+                  : 'bg-brand-card text-brand-dim border border-black/8 hover:text-brand-white'
               }`}
             >
               {f}
@@ -92,7 +92,7 @@ export default function VendorBrowsingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04, duration: 0.3 }}
               onClick={() => router.push(`/order/vendors/${vendor.id}/menu`)}
-              className="text-left glass rounded-2xl overflow-hidden hover:border-white/15 transition-all active:scale-95"
+              className="text-left glass rounded-2xl overflow-hidden hover:border-black/15 transition-all active:scale-95"
             >
               {/* Color bar */}
               <div className="h-1.5 w-full" style={{ backgroundColor: vendor.booth_color }} />

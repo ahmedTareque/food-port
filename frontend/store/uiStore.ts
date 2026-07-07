@@ -3,6 +3,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Toast } from '@/types';
 
+export type FontChoice = 'poppins' | 'inter' | 'manrope';
+
 interface UIStore {
   toasts: Toast[];
   addToast: (toast: Omit<Toast, 'id'>) => void;
@@ -11,6 +13,8 @@ interface UIStore {
   toggleKDSMute: () => void;
   kdsVolume: number;
   setKDSVolume: (v: number) => void;
+  font: FontChoice;
+  setFont: (f: FontChoice) => void;
 }
 
 export const useUIStore = create<UIStore>()(
@@ -34,10 +38,13 @@ export const useUIStore = create<UIStore>()(
 
       kdsVolume: 0.7,
       setKDSVolume: (v) => set({ kdsVolume: v }),
+
+      font: 'poppins',
+      setFont: (f) => set({ font: f }),
     }),
     {
       name: 'ui-prefs',
-      partialize: (state) => ({ isKDSMuted: state.isKDSMuted, kdsVolume: state.kdsVolume }),
+      partialize: (state) => ({ isKDSMuted: state.isKDSMuted, kdsVolume: state.kdsVolume, font: state.font }),
     }
   )
 );

@@ -181,13 +181,13 @@ export default function AdminVendorDetailPage() {
               <label className="block text-xs font-semibold text-brand-chrome mb-1.5 uppercase tracking-wider">{label}</label>
               <input type={type} value={staffForm[key as keyof typeof staffForm]}
                 onChange={(e) => setStaffForm((f) => ({ ...f, [key]: e.target.value }))}
-                className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
+                className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
             </div>
           ))}
           <div>
             <label className="block text-xs font-semibold text-brand-chrome mb-1.5 uppercase tracking-wider">Role</label>
             <select value={staffForm.role} onChange={(e) => setStaffForm((f) => ({ ...f, role: e.target.value }))}
-              className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60">
+              className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60">
               {STAFF_ROLES.map((r) => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
             </select>
           </div>

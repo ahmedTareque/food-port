@@ -133,7 +133,7 @@ export default function VendorLoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="vendor@example.com"
-                  className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-sm text-brand-white placeholder:text-brand-dim focus:outline-none focus:border-brand-orange/60"
+                  className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-3 text-sm text-brand-white placeholder:text-brand-dim focus:outline-none focus:border-brand-orange/60"
                 />
               </div>
               <div>
@@ -146,7 +146,7 @@ export default function VendorLoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-sm text-brand-white placeholder:text-brand-dim focus:outline-none focus:border-brand-orange/60"
+                  className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-3 text-sm text-brand-white placeholder:text-brand-dim focus:outline-none focus:border-brand-orange/60"
                 />
               </div>
               <Button
@@ -169,7 +169,7 @@ export default function VendorLoginPage() {
                   value={vendorId}
                   onChange={(e) => setVendorId(e.target.value)}
                   placeholder="Enter your vendor ID"
-                  className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-sm text-brand-white placeholder:text-brand-dim focus:outline-none focus:border-brand-orange/60"
+                  className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-3 text-sm text-brand-white placeholder:text-brand-dim focus:outline-none focus:border-brand-orange/60"
                 />
               </div>
 
@@ -199,7 +199,7 @@ export default function VendorLoginPage() {
                         ? 'bg-brand-orange text-white'
                         : key === '⌫'
                         ? 'bg-brand-steel text-brand-chrome'
-                        : 'bg-brand-bg border border-white/8 text-brand-white hover:bg-brand-steel'
+                        : 'bg-brand-bg border border-black/8 text-brand-white hover:bg-brand-steel'
                     } disabled:opacity-50`}
                   >
                     {pinLoading && key === '↵' ? '...' : key}

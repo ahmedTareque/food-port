@@ -97,7 +97,7 @@ export default function MenuManagementPage() {
   return (
     <div className="flex h-full">
       {/* Category sidebar */}
-      <aside className="w-52 border-r border-white/6 flex flex-col pt-6 shrink-0">
+      <aside className="w-52 border-r border-black/6 flex flex-col pt-6 shrink-0">
         <div className="px-4 pb-3">
           <p className="text-xs text-brand-dim uppercase tracking-wider">Categories</p>
         </div>
@@ -130,13 +130,13 @@ export default function MenuManagementPage() {
           ))}
         </div>
         {/* Add category */}
-        <div className="border-t border-white/6 p-3 space-y-2">
+        <div className="border-t border-black/6 p-3 space-y-2">
           <input
             value={newCatName}
             onChange={(e) => setNewCatName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && createCategory()}
             placeholder="New category…"
-            className="w-full bg-brand-bg border border-white/10 rounded-lg px-3 py-1.5 text-xs text-brand-white focus:outline-none focus:border-brand-orange/60"
+            className="w-full bg-brand-bg border border-black/10 rounded-lg px-3 py-1.5 text-xs text-brand-white focus:outline-none focus:border-brand-orange/60"
           />
           <button
             onClick={createCategory}
@@ -160,7 +160,7 @@ export default function MenuManagementPage() {
                 value={menuSearch}
                 onChange={(e) => setMenuSearch(e.target.value)}
                 placeholder="Search items…"
-                className="bg-brand-bg border border-white/10 rounded-lg px-3 py-1.5 text-xs text-brand-white focus:outline-none focus:border-brand-orange/60 w-36"
+                className="bg-brand-bg border border-black/10 rounded-lg px-3 py-1.5 text-xs text-brand-white focus:outline-none focus:border-brand-orange/60 w-36"
               />
               {activeCategory && (
                 <>
@@ -411,13 +411,13 @@ function MenuItemFormModal({
           <label className="block text-xs font-semibold text-brand-chrome mb-2 uppercase tracking-wider">Item Image</label>
           <div className="flex items-center gap-3">
             {form.image_url && (
-              <img src={form.image_url} alt="preview" className="w-16 h-16 rounded-xl object-cover border border-white/10" />
+              <img src={form.image_url} alt="preview" className="w-16 h-16 rounded-xl object-cover border border-black/10" />
             )}
             <div className="flex-1">
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                className="w-full px-4 py-2.5 rounded-xl border border-dashed border-white/20 text-sm text-brand-dim hover:border-brand-orange/40 hover:text-brand-white transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-dashed border-black/20 text-sm text-brand-dim hover:border-brand-orange/40 hover:text-brand-white transition-all"
               >
                 {uploading ? 'Uploading…' : form.image_url ? 'Change Image' : 'Upload Image'}
               </button>
@@ -439,7 +439,7 @@ function MenuItemFormModal({
           <input
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+            className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
           />
         </div>
 
@@ -449,7 +449,7 @@ function MenuItemFormModal({
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             rows={2}
-            className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 resize-none"
+            className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 resize-none"
           />
         </div>
 
@@ -462,7 +462,7 @@ function MenuItemFormModal({
               min="0"
               value={form.base_price}
               onChange={(e) => setForm((f) => ({ ...f, base_price: e.target.value }))}
-              className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+              className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
             />
           </div>
           <div>
@@ -472,7 +472,7 @@ function MenuItemFormModal({
               min="1"
               value={form.prep_time_minutes}
               onChange={(e) => setForm((f) => ({ ...f, prep_time_minutes: e.target.value }))}
-              className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+              className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
             />
           </div>
         </div>
@@ -482,7 +482,7 @@ function MenuItemFormModal({
           <select
             value={form.category_id}
             onChange={(e) => setForm((f) => ({ ...f, category_id: e.target.value }))}
-            className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+            className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
           >
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -500,7 +500,7 @@ function MenuItemFormModal({
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${
                   form.dietary_tags.includes(tag)
                     ? 'bg-brand-orange/20 text-brand-orange border border-brand-orange/30'
-                    : 'bg-brand-card text-brand-dim border border-white/8 hover:border-white/15'
+                    : 'bg-brand-card text-brand-dim border border-black/8 hover:border-black/15'
                 }`}
               >
                 {tag}
@@ -646,7 +646,7 @@ function ModifierGroupModal({ item, onClose }: { item: MenuItem; onClose: () => 
                   placeholder="Option name"
                   value={newMod.name}
                   onChange={(e) => setNewMod((m) => ({ ...m, name: e.target.value }))}
-                  className="flex-1 bg-brand-bg border border-white/10 rounded-lg px-3 py-1.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+                  className="flex-1 bg-brand-bg border border-black/10 rounded-lg px-3 py-1.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
                 />
                 <input
                   type="number"
@@ -654,7 +654,7 @@ function ModifierGroupModal({ item, onClose }: { item: MenuItem; onClose: () => 
                   placeholder="+$0.00"
                   value={newMod.price_adjustment}
                   onChange={(e) => setNewMod((m) => ({ ...m, price_adjustment: e.target.value }))}
-                  className="w-20 bg-brand-bg border border-white/10 rounded-lg px-3 py-1.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+                  className="w-20 bg-brand-bg border border-black/10 rounded-lg px-3 py-1.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
                 />
                 <Button size="sm" onClick={() => addModifier(group.id)}>Add</Button>
                 <Button size="sm" variant="ghost" onClick={() => setAddingModifier(null)}>Cancel</Button>
@@ -679,7 +679,7 @@ function ModifierGroupModal({ item, onClose }: { item: MenuItem; onClose: () => 
                 placeholder="Group name (e.g. Size, Extras, Sauces)"
                 value={newGroup.name}
                 onChange={(e) => setNewGroup((g) => ({ ...g, name: e.target.value }))}
-                className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+                className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
               />
               <div className="flex gap-4 items-center">
                 <div className="flex-1">
@@ -690,7 +690,7 @@ function ModifierGroupModal({ item, onClose }: { item: MenuItem; onClose: () => 
                     max="10"
                     value={newGroup.max_selections}
                     onChange={(e) => setNewGroup((g) => ({ ...g, max_selections: e.target.value }))}
-                    className="w-full bg-brand-bg border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+                    className="w-full bg-brand-bg border border-black/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
                   />
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer mt-4">

@@ -42,8 +42,8 @@ function WelcomeContent() {
       {/* Background decoration circles */}
       <div className="absolute top-[-120px] right-[-80px] w-80 h-80 rounded-full bg-brand-orange/8 blur-3xl pointer-events-none" />
       <div className="absolute bottom-[-100px] left-[-60px] w-64 h-64 rounded-full bg-brand-yellow/6 blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-white/3 pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-white/4 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-black/3 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-black/4 pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}

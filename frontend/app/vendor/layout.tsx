@@ -48,8 +48,8 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   return (
     <div className="flex h-screen bg-brand-bg overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-[220px] flex-shrink-0 glass border-r border-white/6 flex flex-col">
-        <div className="px-5 py-5 border-b border-white/6">
+      <aside className="w-[220px] flex-shrink-0 glass border-r border-black/6 flex flex-col">
+        <div className="px-5 py-5 border-b border-black/6">
           <h1 className="font-heading text-2xl text-brand-orange tracking-widest">FOOD VILLAGE</h1>
           <p className="text-xs text-brand-dim font-mono mt-0.5">{user?.email}</p>
         </div>
@@ -63,7 +63,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-semibold ${
                     active
                       ? 'bg-brand-orange/15 text-brand-orange border border-brand-orange/20'
-                      : 'text-brand-dim hover:text-brand-white hover:bg-white/5'
+                      : 'text-brand-dim hover:text-brand-white hover:bg-black/5'
                   }`}
                 >
                   <span className="text-base">{item.icon}</span>
@@ -80,7 +80,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
           })}
         </nav>
 
-        <div className="px-4 py-4 border-t border-white/6 space-y-2">
+        <div className="px-4 py-4 border-t border-black/6 space-y-2">
           <button
             onClick={toggleOnline}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-semibold hover:bg-green-500/15 transition-all"

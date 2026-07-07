@@ -43,7 +43,7 @@ export default function Modal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div
@@ -54,7 +54,7 @@ export default function Modal({
             className={`relative w-full ${sizeMap[size]} glass rounded-2xl overflow-hidden`}
           >
             {title && (
-              <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-brand-border">
                 <h2 className="font-heading text-2xl text-brand-white tracking-wide">
                   {title}
                 </h2>

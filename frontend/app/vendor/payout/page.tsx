@@ -60,7 +60,7 @@ export default function PayoutPage() {
 
       {/* Transactions */}
       <GlassCard className="p-0 overflow-hidden">
-        <div className="px-4 py-3 border-b border-white/6">
+        <div className="px-4 py-3 border-b border-black/6">
           <h2 className="font-heading text-xl text-brand-white tracking-wide">DEDUCTIONS HISTORY</h2>
         </div>
         {data.transactions.length === 0 ? (
@@ -68,7 +68,7 @@ export default function PayoutPage() {
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="text-xs text-brand-dim uppercase tracking-wider border-b border-white/6">
+              <tr className="text-xs text-brand-dim uppercase tracking-wider border-b border-black/6">
                 <th className="px-4 py-3 text-left">Month</th>
                 <th className="px-4 py-3 text-left">Type</th>
                 <th className="px-4 py-3 text-right">Amount</th>
@@ -77,7 +77,7 @@ export default function PayoutPage() {
             </thead>
             <tbody className="divide-y divide-white/4">
               {data.transactions.map((t) => (
-                <tr key={t.id} className="hover:bg-white/2 transition-colors">
+                <tr key={t.id} className="hover:bg-black/2 transition-colors">
                   <td className="px-4 py-3 font-mono text-sm text-brand-chrome">{t.month}</td>
                   <td className="px-4 py-3 text-sm text-brand-white capitalize">{TYPE_LABELS[t.type] ?? t.type}</td>
                   <td className="px-4 py-3 text-right font-mono text-sm text-brand-orange">

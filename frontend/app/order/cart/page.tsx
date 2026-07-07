@@ -104,7 +104,7 @@ export default function CartPage() {
           <div key={vendorId} className="glass rounded-2xl overflow-hidden">
             {/* Vendor header */}
             <div
-              className="flex items-center gap-2 px-4 py-3 border-b border-white/6"
+              className="flex items-center gap-2 px-4 py-3 border-b border-black/6"
               style={{ backgroundColor: `${vendorItems[0].vendorColor}18` }}
             >
               <div
@@ -209,7 +209,7 @@ export default function CartPage() {
                 onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                 onKeyDown={(e) => e.key === 'Enter' && applyPromo()}
                 placeholder="ENTER CODE"
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-brand-white font-mono text-sm placeholder:text-brand-dim/40 outline-none focus:border-brand-orange/40 transition-colors"
+                className="flex-1 bg-black/5 border border-black/10 rounded-xl px-3 py-2 text-brand-white font-mono text-sm placeholder:text-brand-dim/40 outline-none focus:border-brand-orange/40 transition-colors"
               />
               <button
                 onClick={applyPromo}
@@ -238,7 +238,7 @@ export default function CartPage() {
               <span className="font-mono">−${promoResult.discount_amount.toFixed(2)}</span>
             </div>
           )}
-          <div className="border-t border-white/8 pt-2 mt-2 flex justify-between font-heading text-xl text-brand-white">
+          <div className="border-t border-black/8 pt-2 mt-2 flex justify-between font-heading text-xl text-brand-white">
             <span>TOTAL</span>
             <span className="font-mono text-brand-orange">${discountedTotal.toFixed(2)}</span>
           </div>

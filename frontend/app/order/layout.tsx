@@ -35,7 +35,7 @@ function IdleOverlay({ countdown, onStay }: { countdown: number; onStay: () => v
         </motion.div>
         <button
           onClick={(e) => { e.stopPropagation(); onStay(); }}
-          className="bg-brand-orange text-white font-heading text-xl px-10 py-4 rounded-2xl tracking-widest hover:bg-orange-500 transition-colors"
+          className="bg-brand-orange text-white font-heading text-xl px-10 py-4 rounded-2xl tracking-widest hover:bg-brand-primary-hover transition-colors"
         >
           TAP TO CONTINUE
         </button>
@@ -117,17 +117,17 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
         className={`fixed bottom-24 right-4 z-50 w-10 h-10 rounded-full flex items-center justify-center text-base shadow-lg transition-all ${
           a11y
             ? 'bg-yellow-400 text-black border-2 border-yellow-500'
-            : 'bg-white/10 text-brand-dim border border-white/10 hover:bg-white/20'
+            : 'bg-black/10 text-brand-dim border border-black/10 hover:bg-black/20'
         }`}
       >
         ♿
       </button>
       {/* Header */}
-      <header className="sticky top-0 z-40 glass border-b border-white/6 px-4 py-3 flex items-center gap-3">
+      <header className="sticky top-0 z-40 glass border-b border-black/6 px-4 py-3 flex items-center gap-3">
         {!isWelcome && (
           <button
             onClick={() => router.back()}
-            className="text-brand-dim hover:text-brand-white transition-colors p-1.5 rounded-lg hover:bg-white/5"
+            className="text-brand-dim hover:text-brand-white transition-colors p-1.5 rounded-lg hover:bg-black/5"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -170,7 +170,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
             className="flex items-center justify-between w-full bg-brand-orange rounded-2xl px-5 py-4 shadow-xl shadow-orange-900/40"
           >
             <div className="flex items-center gap-3">
-              <span className="bg-white/20 text-white text-xs font-bold w-6 h-6 rounded-lg flex items-center justify-center font-mono">
+              <span className="bg-black/20 text-white text-xs font-bold w-6 h-6 rounded-lg flex items-center justify-center font-mono">
                 {itemCount}
               </span>
               <span className="text-white font-semibold text-sm">View Cart</span>

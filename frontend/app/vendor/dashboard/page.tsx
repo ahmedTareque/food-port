@@ -191,7 +191,7 @@ export default function DashboardPage() {
           {data.recent_orders.map((order) => (
             <div
               key={order.id}
-              className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0"
+              className="flex items-center justify-between py-2.5 border-b border-black/5 last:border-0"
             >
               <div className="flex items-center gap-3">
                 <span className="font-heading text-xl text-brand-orange w-12">

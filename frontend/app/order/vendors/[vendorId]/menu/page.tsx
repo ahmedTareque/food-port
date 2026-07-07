@@ -189,7 +189,7 @@ export default function VendorMenuPage() {
       </div>
 
       {/* Category tabs */}
-      <div className="sticky top-[57px] z-30 bg-brand-bg/90 backdrop-blur-md border-b border-white/6">
+      <div className="sticky top-[57px] z-30 bg-brand-bg/90 backdrop-blur-md border-b border-black/6">
         <div className="flex gap-1 overflow-x-auto px-4 py-2 scrollbar-none">
           {categories.map((cat) => (
             <button
@@ -227,7 +227,7 @@ export default function VendorMenuPage() {
                   onClick={() => item.is_available && handleItemClick(item)}
                   className={`text-left glass rounded-2xl overflow-hidden transition-all ${
                     item.is_available
-                      ? 'hover:border-white/15 active:scale-95'
+                      ? 'hover:border-black/15 active:scale-95'
                       : 'opacity-50 cursor-not-allowed'
                   } ${loadingItemId === item.id ? 'opacity-60 pointer-events-none' : ''}`}
                 >
@@ -395,7 +395,7 @@ function ItemDetailModal({ item, vendor, onClose, onAdd }: ItemDetailModalProps)
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border transition-all ${
                       selected
                         ? 'bg-brand-orange/15 border-brand-orange/40 text-brand-white'
-                        : 'bg-brand-card border-white/6 text-brand-chrome hover:border-white/15'
+                        : 'bg-brand-card border-black/6 text-brand-chrome hover:border-black/15'
                     } disabled:opacity-40`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -435,7 +435,7 @@ function ItemDetailModal({ item, vendor, onClose, onAdd }: ItemDetailModalProps)
               onChange={(e) => setInstructions(e.target.value.slice(0, 200))}
               rows={2}
               placeholder="Any allergies or requests?"
-              className="w-full bg-brand-card border border-white/8 rounded-xl px-3 py-2 text-sm text-brand-white placeholder:text-brand-dim focus:outline-none focus:border-brand-orange/50 resize-none font-body"
+              className="w-full bg-brand-card border border-black/8 rounded-xl px-3 py-2 text-sm text-brand-white placeholder:text-brand-dim focus:outline-none focus:border-brand-orange/50 resize-none font-body"
             />
             <span className="absolute bottom-2 right-3 text-[10px] text-brand-dim font-mono">
               {instructions.length}/200
@@ -445,7 +445,7 @@ function ItemDetailModal({ item, vendor, onClose, onAdd }: ItemDetailModalProps)
 
         {/* Quantity + add to cart */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 bg-brand-card rounded-xl px-3 py-2 border border-white/8">
+          <div className="flex items-center gap-3 bg-brand-card rounded-xl px-3 py-2 border border-black/8">
             <button
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
               className="text-brand-dim hover:text-brand-white transition-colors w-7 h-7 flex items-center justify-center"

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
-import { useUIStore } from '@/store/uiStore';
+import { useUIStore, type FontChoice } from '@/store/uiStore';
 import GlassCard from '@/components/ui/GlassCard';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
@@ -21,6 +21,8 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', tagline: '', tax_rate: '8.25', address: '' });
   const addToast = useUIStore((s) => s.addToast);
+  const font = useUIStore((s) => s.font);
+  const setFont = useUIStore((s) => s.setFont);
 
   useEffect(() => {
     apiFetch<SystemSettings>('/admin/settings')
@@ -71,12 +73,12 @@ export default function AdminSettingsPage() {
             <label className="block text-xs font-semibold text-brand-chrome mb-1.5 uppercase tracking-wider">{label}</label>
             <input type={type} value={form[key as keyof typeof form]} placeholder={placeholder}
               onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-              className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
+              className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
           </div>
         ))}
 
         {settings && (
-          <div className="bg-white/5 rounded-xl p-4 text-sm space-y-1">
+          <div className="bg-brand-steel rounded-xl p-4 text-sm space-y-1">
             <p className="text-brand-dim text-xs uppercase tracking-wider mb-2">Current Values</p>
             <p className="text-brand-chrome">Name: <span className="text-brand-white">{settings.name}</span></p>
             <p className="text-brand-chrome">Tax Rate: <span className="text-brand-white">{((settings.tax_rate ?? 0.0825) * 100).toFixed(2)}%</span></p>
@@ -86,6 +88,28 @@ export default function AdminSettingsPage() {
         <Button onClick={handleSave} loading={saving} size="lg" className="w-full font-heading tracking-widest">
           SAVE SETTINGS
         </Button>
+      </GlassCard>
+
+      <GlassCard className="p-6 space-y-4 mt-6">
+        <h2 className="font-heading text-xl text-brand-white tracking-wide">Appearance</h2>
+        <div>
+          <label className="block text-xs font-semibold text-brand-chrome mb-2 uppercase tracking-wider">Font</label>
+          <div className="flex gap-2">
+            {(['poppins', 'inter', 'manrope'] as FontChoice[]).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFont(f)}
+                className={`px-4 py-2 rounded-lg text-sm border transition-colors capitalize ${
+                  font === f
+                    ? 'bg-brand-orange text-white border-brand-orange'
+                    : 'bg-white text-brand-chrome border-brand-border hover:bg-brand-steel'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
       </GlassCard>
     </div>
   );

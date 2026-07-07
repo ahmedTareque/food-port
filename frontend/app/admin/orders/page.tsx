@@ -112,7 +112,7 @@ export default function AdminOrdersPage() {
           <select
             value={vendorFilter}
             onChange={(e) => { setVendorFilter(e.target.value); setPage(1); }}
-            className="bg-brand-card border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+            className="bg-brand-card border border-black/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
           >
             <option value="">All Vendors</option>
             {vendorList.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
@@ -145,7 +145,7 @@ export default function AdminOrdersPage() {
         <>
           <GlassCard className="overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="border-b border-white/6">
+              <thead className="border-b border-black/6">
                 <tr className="text-brand-dim text-xs uppercase tracking-wider">
                   <th className="text-left px-5 py-3">Token</th>
                   <th className="text-left px-4 py-3">Table</th>
@@ -160,7 +160,7 @@ export default function AdminOrdersPage() {
                   <tr
                     key={order.id}
                     onClick={() => openDetail(order)}
-                    className="hover:bg-white/2 transition-colors cursor-pointer"
+                    className="hover:bg-black/2 transition-colors cursor-pointer"
                   >
                     <td className="px-5 py-3 font-heading text-2xl text-brand-orange">
                       #{String(order.token_number).padStart(3, '0')}
@@ -211,9 +211,9 @@ export default function AdminOrdersPage() {
             <motion.div
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed top-0 right-0 h-full w-[420px] max-w-full bg-brand-card border-l border-white/8 z-50 flex flex-col overflow-hidden"
+              className="fixed top-0 right-0 h-full w-[420px] max-w-full bg-brand-card border-l border-black/8 z-50 flex flex-col overflow-hidden"
             >
-              <div className="flex items-center justify-between px-6 py-5 border-b border-white/6 shrink-0">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-black/6 shrink-0">
                 <div>
                   <h2 className="font-heading text-2xl text-brand-orange tracking-widest">
                     #{String(selected.token_number).padStart(3, '0')}
@@ -265,10 +265,10 @@ export default function AdminOrdersPage() {
                 {detail?.history && detail.history.length > 0 && (
                   <div>
                     <p className="text-xs text-brand-dim uppercase tracking-wider mb-2">Status History</p>
-                    <div className="relative pl-4 border-l border-white/8 space-y-3">
+                    <div className="relative pl-4 border-l border-black/8 space-y-3">
                       {detail.history.map((h) => (
                         <div key={h.id} className="relative">
-                          <div className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full border border-white/20 bg-brand-card" />
+                          <div className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full border border-black/20 bg-brand-card" />
                           <p className="text-xs font-mono text-brand-dim">{new Date(h.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                           <p className="text-sm text-brand-chrome capitalize">
                             {h.from_status ? (
@@ -285,7 +285,7 @@ export default function AdminOrdersPage() {
               </div>
 
               {selected.status !== 'cancelled' && selected.status !== 'completed' && (
-                <div className="p-5 border-t border-white/6 shrink-0">
+                <div className="p-5 border-t border-black/6 shrink-0">
                   <Button variant="danger" size="md" className="w-full" onClick={() => setCancelOpen(true)}>
                     Cancel Order
                   </Button>
@@ -305,7 +305,7 @@ export default function AdminOrdersPage() {
             onChange={(e) => setCancelReason(e.target.value)}
             rows={3}
             placeholder="e.g. Customer request, kitchen closed…"
-            className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 resize-none"
+            className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 resize-none"
           />
           <div className="flex gap-2">
             <Button variant="danger" size="md" className="flex-1" loading={cancelling} onClick={handleCancel} disabled={!cancelReason}>

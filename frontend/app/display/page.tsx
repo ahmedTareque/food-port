@@ -55,7 +55,7 @@ export default function DisplayBoardPage() {
       )}
 
       {/* Header */}
-      <header className="flex items-center justify-between px-10 py-5 border-b border-white/6">
+      <header className="flex items-center justify-between px-10 py-5 border-b border-black/6">
         <h1 className="font-heading text-5xl text-brand-orange tracking-[0.2em]">
           FOOD VILLAGE
         </h1>
@@ -72,7 +72,7 @@ export default function DisplayBoardPage() {
         <div className="flex gap-2 px-10 pt-4 pb-0 flex-wrap">
           <button
             onClick={() => setVendorFilter(null)}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${!vendorFilter ? 'bg-brand-orange text-white' : 'bg-white/5 text-brand-dim hover:text-brand-white'}`}
+            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${!vendorFilter ? 'bg-brand-orange text-white' : 'bg-black/5 text-brand-dim hover:text-brand-white'}`}
           >
             All
           </button>
@@ -181,7 +181,7 @@ export default function DisplayBoardPage() {
       )}
 
       {/* Footer ticker */}
-      <div className="border-t border-white/6 py-3 overflow-hidden">
+      <div className="border-t border-black/6 py-3 overflow-hidden">
         <motion.p
           animate={{ x: [1200, -1200] }}
           transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}

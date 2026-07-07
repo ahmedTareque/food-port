@@ -46,7 +46,7 @@ export default function OrderLookupPage() {
             onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
             placeholder="Token #"
             autoFocus
-            className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-3 text-2xl font-mono text-brand-orange text-center focus:outline-none focus:border-brand-orange/60 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-3 text-2xl font-mono text-brand-orange text-center focus:outline-none focus:border-brand-orange/60 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
           {error && <p className="text-xs text-red-400 mt-1.5 text-center">{error}</p>}
         </div>

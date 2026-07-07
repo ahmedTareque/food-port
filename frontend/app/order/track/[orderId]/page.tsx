@@ -51,7 +51,7 @@ function StatusStep({ step, current }: { step: string; current: string }) {
     <div className="flex flex-col items-center gap-1">
       <div
         className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-          done ? 'bg-green-500 text-white' : active ? 'bg-brand-orange text-white ring-4 ring-brand-orange/30' : 'bg-white/10 text-brand-dim'
+          done ? 'bg-green-500 text-white' : active ? 'bg-brand-orange text-white ring-4 ring-brand-orange/30' : 'bg-black/10 text-brand-dim'
         }`}
       >
         {done ? '✓' : idx + 1}
@@ -146,7 +146,7 @@ export default function TrackOrderPage() {
       {/* Progress steps */}
       <div className="glass rounded-2xl p-5 mb-4">
         <div className="flex items-center justify-between mb-4 relative">
-          <div className="absolute left-4 right-4 top-4 h-0.5 bg-white/10 z-0" />
+          <div className="absolute left-4 right-4 top-4 h-0.5 bg-black/10 z-0" />
           {STEPS.map((s) => <StatusStep key={s} step={s} current={order.overall_status} />)}
         </div>
       </div>

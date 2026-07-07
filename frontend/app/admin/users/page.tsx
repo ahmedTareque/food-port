@@ -85,7 +85,7 @@ export default function AdminUsersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-brand-dim text-xs uppercase tracking-wider border-b border-white/6">
+                <tr className="text-brand-dim text-xs uppercase tracking-wider border-b border-black/6">
                   <th className="text-left py-3 pr-4">Name</th>
                   <th className="text-left py-3 pr-4">Email</th>
                   <th className="text-left py-3 pr-4">Role</th>
@@ -96,7 +96,7 @@ export default function AdminUsersPage() {
               </thead>
               <tbody className="divide-y divide-white/4">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-white/2 transition-colors">
+                  <tr key={u.id} className="hover:bg-black/2 transition-colors">
                     <td className="py-3 pr-4 text-brand-white font-semibold">{u.full_name}</td>
                     <td className="py-3 pr-4 text-brand-dim font-mono text-xs">{u.email}</td>
                     <td className="py-3 pr-4">
@@ -126,11 +126,11 @@ export default function AdminUsersPage() {
           </div>
         )}
         {/* Pagination */}
-        <div className="flex items-center justify-between pt-4 border-t border-white/6 mt-2 px-2">
+        <div className="flex items-center justify-between pt-4 border-t border-black/6 mt-2 px-2">
           <p className="text-xs text-brand-dim">{total} users total</p>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1 text-xs bg-brand-card rounded-lg disabled:opacity-40 hover:bg-white/5">Prev</button>
-            <button onClick={() => setPage((p) => p + 1)} disabled={users.length < 20} className="px-3 py-1 text-xs bg-brand-card rounded-lg disabled:opacity-40 hover:bg-white/5">Next</button>
+            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1 text-xs bg-brand-card rounded-lg disabled:opacity-40 hover:bg-black/5">Prev</button>
+            <button onClick={() => setPage((p) => p + 1)} disabled={users.length < 20} className="px-3 py-1 text-xs bg-brand-card rounded-lg disabled:opacity-40 hover:bg-black/5">Next</button>
           </div>
         </div>
       </GlassCard>
@@ -178,13 +178,13 @@ function UserFormModal({ isOpen, user, onClose, onSaved }: { isOpen: boolean; us
           <div key={key}>
             <label className="block text-xs font-semibold text-brand-chrome mb-1.5 uppercase tracking-wider">{label}</label>
             <input type={type} value={form[key as keyof typeof form]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-              className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
+              className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
           </div>
         ))}
         <div>
           <label className="block text-xs font-semibold text-brand-chrome mb-1.5 uppercase tracking-wider">Role</label>
           <select value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
-            className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60">
+            className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60">
             {ROLES.map((r) => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
           </select>
         </div>

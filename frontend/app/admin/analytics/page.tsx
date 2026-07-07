@@ -61,9 +61,9 @@ export default function AdminAnalyticsPage() {
 
       {/* Date range */}
       <div className="flex gap-3 items-center mb-5">
-        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="bg-brand-card border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
+        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="bg-brand-card border border-black/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
         <span className="text-brand-dim">to</span>
-        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="bg-brand-card border border-white/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
+        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="bg-brand-card border border-black/10 rounded-lg px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
         <div className="flex gap-1">
           {['Today', '7d', '30d'].map((q) => (
             <button key={q} onClick={() => {
@@ -231,7 +231,7 @@ export default function AdminAnalyticsPage() {
           {tab === 4 && (
             <GlassCard className="overflow-auto">
               <table className="w-full text-sm">
-                <thead className="border-b border-white/6">
+                <thead className="border-b border-black/6">
                   <tr className="text-brand-dim text-xs uppercase tracking-wider">
                     {['Vendor', 'Avg', 'P50', 'P90', 'Samples'].map((h) => (
                       <th key={h} className="text-left px-5 py-3">{h}</th>
@@ -240,7 +240,7 @@ export default function AdminAnalyticsPage() {
                 </thead>
                 <tbody className="divide-y divide-white/4">
                   {prepTimes.map((v) => (
-                    <tr key={v.vendor_id} className="hover:bg-white/2 transition-colors">
+                    <tr key={v.vendor_id} className="hover:bg-black/2 transition-colors">
                       <td className="px-5 py-3 text-brand-white font-semibold">{v.vendor_name}</td>
                       <td className="px-5 py-3 font-mono text-brand-orange">{v.avg_prep_time}m</td>
                       <td className="px-5 py-3 font-mono text-brand-chrome">{v.p50}m</td>

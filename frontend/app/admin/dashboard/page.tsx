@@ -127,7 +127,7 @@ export default function AdminDashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-brand-dim text-xs uppercase tracking-wider border-b border-white/6">
+                <tr className="text-brand-dim text-xs uppercase tracking-wider border-b border-black/6">
                   <th className="text-left py-2 pr-4">Token</th>
                   <th className="text-left py-2 pr-4">Vendor</th>
                   <th className="text-left py-2 pr-4">Item</th>
@@ -137,7 +137,7 @@ export default function AdminDashboardPage() {
               </thead>
               <tbody className="divide-y divide-white/4">
                 {liveOrders.slice(0, 20).map((order) => (
-                  <tr key={order.id} className="hover:bg-white/2 transition-colors">
+                  <tr key={order.id} className="hover:bg-black/2 transition-colors">
                     <td className="py-2 pr-4 font-heading text-xl text-brand-orange">#{String(order.token_number).padStart(3, '0')}</td>
                     <td className="py-2 pr-4 text-brand-chrome">{order.items?.[0]?.vendor?.name ?? '—'}</td>
                     <td className="py-2 pr-4 text-brand-white">{order.items?.[0]?.item_name ?? '—'}</td>

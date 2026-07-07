@@ -105,7 +105,7 @@ function KDSCard({
         className="glass rounded-2xl overflow-hidden relative"
       >
         <UrgencyBorder elapsed={elapsed} />
-        <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-white/6">
+        <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-black/6">
           <span className="font-heading text-4xl text-brand-orange">
             #{String(order.token_number).padStart(3, '0')}
           </span>
@@ -180,7 +180,7 @@ function KDSCard({
               className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all ${
                 rejectReason === r
                   ? 'border-red-500/40 bg-red-500/10 text-red-300'
-                  : 'border-white/8 text-brand-chrome hover:border-white/15'
+                  : 'border-black/8 text-brand-chrome hover:border-black/15'
               }`}
             >
               {r}
@@ -375,7 +375,7 @@ export default function KDSPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 right-4 z-[9999] flex items-center gap-3 bg-brand-card border border-white/10 rounded-xl px-4 py-3 shadow-xl"
+            className="fixed top-4 right-4 z-[9999] flex items-center gap-3 bg-brand-card border border-black/10 rounded-xl px-4 py-3 shadow-xl"
           >
             <span className="text-xs font-body text-brand-chrome">
               Item {u.label}
@@ -393,7 +393,7 @@ export default function KDSPage() {
         ))}
       </AnimatePresence>
       {/* KDS Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/6">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-black/6">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-heading text-2xl text-brand-white tracking-wide">

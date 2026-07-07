@@ -212,7 +212,7 @@ function CreateFeedbackModal({
             onChange={(e) => setTitle(e.target.value)}
             maxLength={120}
             placeholder="Short summary..."
-            className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+            className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
           />
         </div>
 
@@ -246,7 +246,7 @@ function CreateFeedbackModal({
             maxLength={1000}
             rows={4}
             placeholder={cfg.placeholder}
-            className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 resize-none"
+            className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 resize-none"
           />
           <p className="text-xs text-brand-dim text-right mt-1">{description.length}/1000</p>
         </div>
@@ -356,7 +356,7 @@ export default function OperationsPage() {
         <h1 className="font-heading text-4xl text-brand-white tracking-widest">OPERATIONS</h1>
 
         {/* Month picker */}
-        <div className="flex items-center gap-2 bg-brand-card border border-white/8 rounded-xl px-3 py-2">
+        <div className="flex items-center gap-2 bg-brand-card border border-black/8 rounded-xl px-3 py-2">
           <button onClick={prevMonth} className="text-brand-dim hover:text-brand-white transition-colors px-1">‹</button>
           <span className="font-mono text-sm text-brand-chrome min-w-[130px] text-center">{monthLabel(month)}</span>
           <button
@@ -392,7 +392,7 @@ export default function OperationsPage() {
                   </span>
                 </div>
                 <p className="text-xs font-semibold text-brand-chrome">{labels[type]}</p>
-                <div className="h-1.5 rounded-full bg-white/8 overflow-hidden">
+                <div className="h-1.5 rounded-full bg-black/8 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all"
                     style={{ width: `${pct}%`, backgroundColor: colors[type] }}
@@ -410,7 +410,7 @@ export default function OperationsPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-brand-card border border-white/8 rounded-xl p-1">
+      <div className="flex gap-1 bg-brand-card border border-black/8 rounded-xl p-1">
         {TABS.map((t) => (
           <button
             key={t.key}

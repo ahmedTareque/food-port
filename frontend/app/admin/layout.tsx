@@ -37,9 +37,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex min-h-screen bg-brand-bg">
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 border-r border-white/6 flex flex-col">
+      <aside className="w-56 shrink-0 border-r border-black/6 flex flex-col">
         {/* Logo */}
-        <div className="px-5 py-6 border-b border-white/6">
+        <div className="px-5 py-6 border-b border-black/6">
           <p className="font-mono text-xs text-brand-dim uppercase tracking-widest mb-0.5">Food Village</p>
           <h2 className="font-heading text-2xl text-brand-orange tracking-widest">ADMIN</h2>
         </div>
@@ -70,7 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* User + logout */}
-        <div className="px-5 py-4 border-t border-white/6">
+        <div className="px-5 py-4 border-t border-black/6">
           {user && (
             <p className="text-xs text-brand-dim truncate mb-2">{user.email}</p>
           )}

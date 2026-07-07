@@ -106,7 +106,7 @@ export default function SettingsPage() {
           <input
             value={settings.name}
             onChange={(e) => setSettings({ ...settings, name: e.target.value })}
-            className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+            className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
           />
         </div>
 
@@ -116,7 +116,7 @@ export default function SettingsPage() {
             value={settings.description ?? ''}
             onChange={(e) => setSettings({ ...settings, description: e.target.value })}
             rows={2}
-            className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 resize-none"
+            className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 resize-none"
           />
         </div>
 
@@ -126,7 +126,7 @@ export default function SettingsPage() {
             <input
               value={settings.cuisine_type}
               onChange={(e) => setSettings({ ...settings, cuisine_type: e.target.value })}
-              className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+              className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
             />
           </div>
           <div>
@@ -135,7 +135,7 @@ export default function SettingsPage() {
               type="number"
               value={settings.avg_prep_time_minutes}
               onChange={(e) => setSettings({ ...settings, avg_prep_time_minutes: parseInt(e.target.value) })}
-              className="w-full bg-brand-bg border border-white/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+              className="w-full bg-brand-bg border border-black/10 rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
             />
           </div>
         </div>
@@ -149,9 +149,9 @@ export default function SettingsPage() {
         <h2 className="font-heading text-xl text-brand-white tracking-wide">Booth Logo</h2>
         <div className="flex items-center gap-4">
           {settings.logo_url ? (
-            <img src={settings.logo_url} alt="Logo" className="w-16 h-16 rounded-xl object-cover border border-white/10" />
+            <img src={settings.logo_url} alt="Logo" className="w-16 h-16 rounded-xl object-cover border border-black/10" />
           ) : (
-            <div className="w-16 h-16 rounded-xl bg-brand-bg border border-white/10 flex items-center justify-center text-brand-dim text-2xl">🏪</div>
+            <div className="w-16 h-16 rounded-xl bg-brand-bg border border-black/10 flex items-center justify-center text-brand-dim text-2xl">🏪</div>
           )}
           <div>
             <input
@@ -196,14 +196,14 @@ export default function SettingsPage() {
                     type="time"
                     value={hours[day].open}
                     onChange={(e) => setDay(day, { open: e.target.value })}
-                    className="bg-brand-bg border border-white/10 rounded-lg px-2 py-1 text-xs text-brand-white focus:outline-none focus:border-brand-orange/60"
+                    className="bg-brand-bg border border-black/10 rounded-lg px-2 py-1 text-xs text-brand-white focus:outline-none focus:border-brand-orange/60"
                   />
                   <span className="text-brand-dim text-xs">–</span>
                   <input
                     type="time"
                     value={hours[day].close}
                     onChange={(e) => setDay(day, { close: e.target.value })}
-                    className="bg-brand-bg border border-white/10 rounded-lg px-2 py-1 text-xs text-brand-white focus:outline-none focus:border-brand-orange/60"
+                    className="bg-brand-bg border border-black/10 rounded-lg px-2 py-1 text-xs text-brand-white focus:outline-none focus:border-brand-orange/60"
                   />
                 </div>
               )}
@@ -316,7 +316,7 @@ function StaffPinSection() {
       <p className="text-xs text-brand-dim">Kitchen staff log in using a 4–6 digit PIN at the KDS screen.</p>
       <div className="space-y-2">
         {pins.map((p) => (
-          <div key={p.id} className="flex items-center gap-3 py-2 border-b border-white/5">
+          <div key={p.id} className="flex items-center gap-3 py-2 border-b border-black/5">
             <div className="flex-1">
               <p className="text-sm font-semibold text-brand-white">{p.label}</p>
               <p className="text-xs text-brand-dim capitalize">{p.role.replace('vendor_', '')}</p>
@@ -337,7 +337,7 @@ function StaffPinSection() {
           value={newLabel}
           onChange={(e) => setNewLabel(e.target.value)}
           placeholder="Name (e.g. Chef Rahim)"
-          className="flex-1 bg-brand-bg border border-white/10 rounded-xl px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+          className="flex-1 bg-brand-bg border border-black/10 rounded-xl px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
         />
         <input
           value={newPin}
@@ -345,7 +345,7 @@ function StaffPinSection() {
           placeholder="PIN"
           type="password"
           maxLength={6}
-          className="w-24 bg-brand-bg border border-white/10 rounded-xl px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
+          className="w-24 bg-brand-bg border border-black/10 rounded-xl px-3 py-2 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60"
         />
         <Button size="sm" onClick={add} loading={adding}>Add</Button>
       </div>

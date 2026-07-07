@@ -1,16 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Manrope:wght@300;400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap');
 @import "tailwindcss";
 
 @theme inline {
-  /* Brand colors */
-  --color-brand-bg: #0d0d0d;
-  --color-brand-card: #1a1a1a;
-  --color-brand-steel: #2c2c2c;
-  --color-brand-chrome: #c8c8c8;
-  --color-brand-orange: #ff5c00;
-  --color-brand-yellow: #ffd000;
-  --color-brand-white: #f5f5f0;
-  --color-brand-dim: #888888;
+  /* Brand colors — light mint POS theme */
+  --color-brand-bg: #F4F7F5;        /* canvas */
+  --color-brand-card: #FFFFFF;      /* surface */
+  --color-brand-steel: #EEF4F1;     /* surface hover / alt */
+  --color-brand-chrome: #6B756F;    /* secondary text */
+  --color-brand-orange: #58D0A2;    /* primary (mint) */
+  --color-brand-yellow: #F3C98B;    /* warning */
+  --color-brand-white: #15181A;     /* primary ink (text on light bg) */
+  --color-brand-dim: #97A19C;       /* muted text */
+
+  /* Extended semantic tokens */
+  --color-brand-border: #E3ECE6;
+  --color-brand-primary-hover: #48C691;
+  --color-brand-primary-light: #DDF8EC;
+  --color-brand-success: #58D0A2;
+  --color-brand-danger: #E4685F;
+  --color-brand-danger-light: #FBE7E5;
+  --color-brand-info: #6FA8E8;
 
   /* Booth colors */
   --color-booth-1: #E63946;
@@ -25,14 +34,23 @@
   --color-booth-10: #CB4335;
 
   /* KDS status colors */
-  --color-kds-new: #F59E0B;
+  --color-kds-new: #E8A23D;
   --color-kds-preparing: #8B5CF6;
   --color-kds-ready: #10B981;
 
-  /* Fonts */
-  --font-heading: 'Bebas Neue', sans-serif;
+  /* Fonts — switchable via [data-font] on <html> */
+  --font-heading: 'Poppins', sans-serif;
   --font-mono: 'DM Mono', monospace;
-  --font-body: 'DM Sans', sans-serif;
+  --font-body: 'Poppins', sans-serif;
+}
+
+:root[data-font='inter'] {
+  --font-heading: 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+:root[data-font='manrope'] {
+  --font-heading: 'Manrope', sans-serif;
+  --font-body: 'Manrope', sans-serif;
 }
 
 *,
@@ -43,25 +61,26 @@
 
 html,
 body {
-  background: #0d0d0d;
-  color: #f5f5f0;
-  font-family: 'DM Sans', sans-serif;
+  background: #F4F7F5;
+  color: #15181A;
+  font-family: var(--font-body);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Glass card utility */
+/* Glass card utility — soft frosted white, light theme */
 .glass {
-  background: rgba(26, 26, 26, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(21, 24, 26, 0.06);
+  box-shadow: 0 4px 24px rgba(21, 24, 26, 0.05);
 }
 
-/* Orange glow for token display */
+/* Mint glow for token display */
 .token-glow {
-  text-shadow: 0 0 40px rgba(255, 92, 0, 0.6), 0 0 80px rgba(255, 92, 0, 0.3);
+  text-shadow: 0 0 40px rgba(88, 208, 162, 0.55), 0 0 80px rgba(88, 208, 162, 0.28);
 }
 
 /* Scrollbar styling */
@@ -70,14 +89,14 @@ body {
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: #EEF4F1;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2c2c2c;
+  background: #C9D6CF;
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff5c00;
+  background: #58D0A2;
 }
 
 /* Accessibility mode */
