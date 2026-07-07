@@ -4,10 +4,10 @@ import Link from 'next/link';
 import { apiFetch, apiPost, apiPatch, apiDelete } from '@/lib/api';
 import { useUIStore } from '@/store/uiStore';
 import type { AdminVendor } from '@/types';
-import GlassCard from '@/components/ui/GlassCard';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import Modal from '@/components/ui/Modal';
+import VendorCard from '@/components/ui/VendorCard';
 
 const BOOTH_COLORS = ['#E63946','#457B9D','#F4A261','#E9C46A','#2A9D8F','#E76F51','#264653','#6A994E','#9B5DE5','#CB4335'];
 
@@ -92,58 +92,50 @@ export default function AdminVendorsPage() {
       </div>
 
       {/* Vendor grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {vendors.map((vendor) => (
-          <GlassCard key={vendor.id} className="overflow-hidden">
-            <div className="h-1" style={{ backgroundColor: vendor.booth_color }} />
-            <div className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="font-heading text-xl text-brand-white tracking-wide">{vendor.name}</p>
-                  <p className="text-xs text-brand-dim mt-0.5">{vendor.cuisine_type} · Booth #{vendor.booth_number}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {vendors.map((vendor, i) => (
+          <VendorCard
+            key={vendor.id}
+            variant={i % 2 === 0 ? 'photo' : 'white'}
+            name={vendor.name}
+            cuisine={vendor.cuisine_type}
+            boothNumber={vendor.booth_number}
+            isOpen={vendor.status === 'online'}
+            footer={
+              <div className="pt-4 border-t border-brand-border">
+                <div className="flex items-center justify-between mb-3">
+                  <span
+                    className="px-2 py-0.5 rounded-full text-xs font-semibold capitalize"
+                    style={{
+                      backgroundColor: vendor.status === 'online' ? '#DDF8EC' : vendor.status === 'suspended' ? '#FBE7E5' : '#EEF4F1',
+                      color: vendor.status === 'online' ? '#1F8F66' : vendor.status === 'suspended' ? '#C0392B' : '#6B756F',
+                    }}
+                  >
+                    {vendor.status}
+                  </span>
+                  <div className="flex gap-4 text-xs text-brand-chrome">
+                    <span>Rev <b className="text-brand-white">${vendor.revenue_today.toFixed(0)}</b></span>
+                    <span>Orders <b className="text-brand-white">{vendor.order_count_today}</b></span>
+                    <span>Staff <b className="text-brand-white">{vendor.staff_count}</b></span>
+                  </div>
                 </div>
-                <span
-                  className="px-2 py-0.5 rounded-full text-xs font-semibold capitalize"
-                  style={{
-                    backgroundColor: vendor.status === 'online' ? '#10B98122' : vendor.status === 'suspended' ? '#EF444422' : '#88888822',
-                    color: vendor.status === 'online' ? '#10B981' : vendor.status === 'suspended' ? '#EF4444' : '#888888',
-                  }}
-                >
-                  {vendor.status}
-                </span>
+                <div className="flex gap-2">
+                  <Link href={`/admin/vendors/${vendor.id}`} className="flex-1">
+                    <Button size="sm" variant="secondary" className="w-full">Detail</Button>
+                  </Link>
+                  <Button size="sm" variant="secondary" onClick={() => setEditVendor(vendor)}>Edit</Button>
+                  <Button size="sm" variant="secondary" onClick={() => loadStaff(vendor)}>Staff</Button>
+                  <Button
+                    size="sm"
+                    variant={vendor.status === 'suspended' ? 'secondary' : 'danger'}
+                    onClick={() => suspendVendor(vendor)}
+                  >
+                    {vendor.status === 'suspended' ? 'Restore' : 'Suspend'}
+                  </Button>
+                </div>
               </div>
-
-              <div className="flex gap-4 text-sm mb-4">
-                <div>
-                  <p className="text-xs text-brand-dim">Today Revenue</p>
-                  <p className="font-mono text-brand-yellow">${vendor.revenue_today.toFixed(2)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-brand-dim">Orders</p>
-                  <p className="font-mono text-brand-white">{vendor.order_count_today}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-brand-dim">Staff</p>
-                  <p className="font-mono text-brand-white">{vendor.staff_count}</p>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Link href={`/admin/vendors/${vendor.id}`} className="flex-1">
-                  <Button size="sm" variant="secondary" className="w-full">Detail</Button>
-                </Link>
-                <Button size="sm" variant="secondary" onClick={() => setEditVendor(vendor)}>Edit</Button>
-                <Button size="sm" variant="secondary" onClick={() => loadStaff(vendor)}>Staff</Button>
-                <Button
-                  size="sm"
-                  variant={vendor.status === 'suspended' ? 'secondary' : 'danger'}
-                  onClick={() => suspendVendor(vendor)}
-                >
-                  {vendor.status === 'suspended' ? 'Restore' : 'Suspend'}
-                </Button>
-              </div>
-            </div>
-          </GlassCard>
+            }
+          />
         ))}
       </div>
 

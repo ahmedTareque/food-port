@@ -6,6 +6,7 @@ import { apiFetch } from '@/lib/api';
 import type { Vendor } from '@/types';
 import Spinner from '@/components/ui/Spinner';
 import PageTransition from '@/components/ui/PageTransition';
+import VendorCard from '@/components/ui/VendorCard';
 
 const CUISINE_FILTERS = ['All', 'Fast Food', 'Asian', 'Mexican', 'Drinks', 'Desserts', 'Healthy'];
 
@@ -84,49 +85,25 @@ export default function VendorBrowsingPage() {
         </h2>
 
         {/* Grid */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {filtered.map((vendor, i) => (
-            <motion.button
+            <motion.div
               key={vendor.id}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04, duration: 0.3 }}
-              onClick={() => router.push(`/order/vendors/${vendor.id}/menu`)}
-              className="text-left glass rounded-2xl overflow-hidden hover:border-black/15 transition-all active:scale-95"
             >
-              {/* Color bar */}
-              <div className="h-1.5 w-full" style={{ backgroundColor: vendor.booth_color }} />
-
-              <div className="p-3">
-                {/* Logo placeholder */}
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-2 text-xl"
-                  style={{ backgroundColor: `${vendor.booth_color}22` }}
-                >
-                  🍴
-                </div>
-
-                <h3 className="font-heading text-lg text-brand-white tracking-wide leading-tight mb-0.5">
-                  {vendor.name.toUpperCase()}
-                </h3>
-                <p className="text-xs text-brand-dim font-body mb-2">{vendor.cuisine_type}</p>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-brand-dim">
-                    ~{vendor.avg_prep_time_minutes}m
-                  </span>
-                  {vendor.is_accepting_orders ? (
-                    <span className="text-[10px] font-semibold text-green-400 bg-green-400/10 px-2 py-0.5 rounded-md">
-                      OPEN
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-semibold text-red-400 bg-red-400/10 px-2 py-0.5 rounded-md">
-                      CLOSED
-                    </span>
-                  )}
-                </div>
-              </div>
-            </motion.button>
+              <VendorCard
+                variant={i % 2 === 0 ? 'photo' : 'white'}
+                name={vendor.name}
+                cuisine={vendor.cuisine_type}
+                prepTimeMinutes={vendor.avg_prep_time_minutes}
+                boothNumber={vendor.booth_number}
+                isOpen={vendor.is_accepting_orders}
+                orderLabel="Order now"
+                onOrder={() => router.push(`/order/vendors/${vendor.id}/menu`)}
+              />
+            </motion.div>
           ))}
         </div>
       </div>
