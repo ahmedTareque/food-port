@@ -1,5 +1,5 @@
-const SHELL_CACHE = 'fv-shell-v1';
-const API_CACHE = 'fv-api-v1';
+const SHELL_CACHE = 'fv-shell-v2';
+const API_CACHE = 'fv-api-v2';
 
 const SHELL_URLS = [
   '/',
@@ -13,7 +13,9 @@ const SHELL_URLS = [
 // Install — cache shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(SHELL_CACHE).then((cache) => cache.addAll(SHELL_URLS)).then(() => self.skipWaiting())
+    caches.open(SHELL_CACHE)
+      .then((cache) => Promise.allSettled(SHELL_URLS.map((u) => cache.add(u))))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -37,7 +39,15 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET and cross-origin (except our API)
   if (request.method !== 'GET') return;
 
-  // API calls — network-first, short cache fallback
+  // Authenticated API calls — network-only, never cached (avoids leaking one
+  // user's cached response to another user hitting the same URL, and avoids
+  // serving stale data on a transient failure).
+  if ((url.pathname.startsWith('/api/') || url.port === '3001') && request.headers.has('Authorization')) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // Public API calls — network-first, short cache fallback
   if (url.pathname.startsWith('/api/') || url.port === '3001') {
     event.respondWith(
       fetch(request)
