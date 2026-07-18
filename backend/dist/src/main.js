@@ -18,8 +18,8 @@ async function bootstrap() {
         transformOptions: { enableImplicitConversion: true },
     }));
     const config = new swagger_1.DocumentBuilder()
-        .setTitle('Food Village POS API')
-        .setDescription('API for Food Village multi-vendor POS system')
+        .setTitle('Food Port POS API')
+        .setDescription('API for Food Port multi-vendor POS system')
         .setVersion('1.0')
         .addBearerAuth()
         .build();
@@ -27,7 +27,7 @@ async function bootstrap() {
     swagger_1.SwaggerModule.setup('api/docs', app, document);
     const port = process.env.PORT ?? 3001;
     await app.listen(port);
-    console.log(`🍔 Food Village API running on http://localhost:${port}/api`);
+    console.log(`🍔 Food Port API running on http://localhost:${port}/api`);
     console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
 }
 bootstrap();

@@ -92,9 +92,9 @@ export declare class OrdersService {
     }>;
     findByToken(tokenNumber: number): Promise<{
         id: string;
-        created_at: Date;
-        status: import(".prisma/client").$Enums.OrderStatus;
         token_number: number;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        created_at: Date;
     }>;
     cancel(orderId: string, reason?: string): Promise<{
         id: string;
@@ -152,18 +152,18 @@ export declare class OrdersService {
     getItemTransitions(): Record<import(".prisma/client").$Enums.OrderItemStatus, import(".prisma/client").$Enums.OrderItemStatus[]>;
     rateOrder(orderId: string, rating: number, comment?: string): Promise<{
         id: string;
-        vendor_id: string;
         created_at: Date;
         rating: number;
         order_id: string;
+        vendor_id: string;
         comment: string | null;
     }>;
     getOrderRating(orderId: string): Promise<{
         id: string;
-        vendor_id: string;
         created_at: Date;
         rating: number;
         order_id: string;
+        vendor_id: string;
         comment: string | null;
     } | null>;
 }

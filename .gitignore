@@ -9,6 +9,9 @@ node_modules/
 !.env.example
 !.env.local.example
 
+# ─── Secret-bearing docs (contains live DB password / keys) ───────────────────
+SUPABASE_SETUP.md
+
 # ─── Build outputs ───────────────────────────────────────────────────────────
 dist/
 build/

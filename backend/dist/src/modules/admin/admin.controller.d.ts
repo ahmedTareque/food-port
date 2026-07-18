@@ -75,13 +75,13 @@ export declare class AdminController {
             item_count: number;
             items: {
                 id: string;
+                status: import(".prisma/client").$Enums.OrderItemStatus;
                 vendor: {
                     name: string;
                     booth_color: string;
                 };
-                status: import(".prisma/client").$Enums.OrderItemStatus;
-                quantity: number;
                 item_name: string;
+                quantity: number;
                 total_price: number;
             }[];
             created_at: Date;
@@ -94,57 +94,34 @@ export declare class AdminController {
         table: {
             table_number: number;
         } | null;
-        promotions: ({
-            promotion: {
-                id: string;
-                vendor_id: string | null;
-                is_active: boolean;
-                created_at: Date;
-                updated_at: Date;
-                code: string;
-                type: string;
-                value: number;
-                min_order_amount: number | null;
-                max_uses: number | null;
-                current_uses: number;
-                valid_from: Date;
-                valid_to: Date;
-            };
-        } & {
-            id: string;
-            created_at: Date;
-            order_id: string;
-            promotion_id: string;
-            discount_amount: number;
-        })[];
         items: ({
+            modifiers: {
+                id: string;
+                quantity: number;
+                order_item_id: string;
+                modifier_id: string;
+                modifier_name: string;
+                price_at_order: number;
+            }[];
             vendor: {
                 id: string;
                 name: string;
                 booth_color: string;
             };
-            modifiers: {
-                id: string;
-                modifier_id: string;
-                quantity: number;
-                order_item_id: string;
-                modifier_name: string;
-                price_at_order: number;
-            }[];
         } & {
             id: string;
-            vendor_id: string;
+            status: import(".prisma/client").$Enums.OrderItemStatus;
             created_at: Date;
             updated_at: Date;
-            status: import(".prisma/client").$Enums.OrderItemStatus;
-            menu_item_id: string;
-            quantity: number;
-            special_instructions: string | null;
             order_id: string;
+            vendor_id: string;
+            menu_item_id: string;
             item_name: string;
+            quantity: number;
             unit_price: number;
             modifier_price: number;
             total_price: number;
+            special_instructions: string | null;
             estimated_prep_time: number;
             accepted_at: Date | null;
             preparing_at: Date | null;
@@ -162,41 +139,64 @@ export declare class AdminController {
             reason: string | null;
             actor_id: string | null;
         }[];
+        promotions: ({
+            promotion: {
+                id: string;
+                created_at: Date;
+                updated_at: Date;
+                vendor_id: string | null;
+                is_active: boolean;
+                code: string;
+                type: string;
+                value: number;
+                min_order_amount: number | null;
+                max_uses: number | null;
+                current_uses: number;
+                valid_from: Date;
+                valid_to: Date;
+            };
+        } & {
+            id: string;
+            created_at: Date;
+            order_id: string;
+            promotion_id: string;
+            discount_amount: number;
+        })[];
     } & {
         id: string;
-        created_at: Date;
-        updated_at: Date;
-        status: import(".prisma/client").$Enums.OrderStatus;
-        table_id: string | null;
-        waiter_id: string | null;
-        session_id: string | null;
         idempotency_key: string;
-        special_notes: string | null;
         token_number: number;
         token_date: string;
+        table_id: string | null;
+        session_id: string | null;
+        waiter_id: string | null;
+        status: import(".prisma/client").$Enums.OrderStatus;
         payment_method: string;
         payment_status: string;
         subtotal: number;
         tax_amount: number;
         total: number;
+        special_notes: string | null;
+        created_at: Date;
+        updated_at: Date;
     }>;
     updateOrderStatus(user: JwtUser, id: string, dto: UpdateOrderStatusDto): Promise<{
         id: string;
-        created_at: Date;
-        updated_at: Date;
-        status: import(".prisma/client").$Enums.OrderStatus;
-        table_id: string | null;
-        waiter_id: string | null;
-        session_id: string | null;
         idempotency_key: string;
-        special_notes: string | null;
         token_number: number;
         token_date: string;
+        table_id: string | null;
+        session_id: string | null;
+        waiter_id: string | null;
+        status: import(".prisma/client").$Enums.OrderStatus;
         payment_method: string;
         payment_status: string;
         subtotal: number;
         tax_amount: number;
         total: number;
+        special_notes: string | null;
+        created_at: Date;
+        updated_at: Date;
     }>;
     cancelOrder(user: JwtUser, id: string, dto: CancelOrderDto): Promise<{
         id: string;
@@ -216,32 +216,32 @@ export declare class AdminController {
     }[]>;
     createVendor(user: JwtUser, dto: CreateVendorDto): Promise<{
         id: string;
+        status: import(".prisma/client").$Enums.VendorStatus;
         created_at: Date;
         updated_at: Date;
         name: string;
         slug: string;
-        booth_number: number;
         cuisine_type: string;
+        booth_number: number;
         booth_color: string;
         logo_url: string | null;
         avg_prep_time_minutes: number;
-        status: import(".prisma/client").$Enums.VendorStatus;
         is_accepting_orders: boolean;
         operating_hours: import("@prisma/client/runtime/library").JsonValue | null;
         notification_prefs: import("@prisma/client/runtime/library").JsonValue | null;
     }>;
     updateVendor(user: JwtUser, id: string, dto: UpdateVendorDto): Promise<{
         id: string;
+        status: import(".prisma/client").$Enums.VendorStatus;
         created_at: Date;
         updated_at: Date;
         name: string;
         slug: string;
-        booth_number: number;
         cuisine_type: string;
+        booth_number: number;
         booth_color: string;
         logo_url: string | null;
         avg_prep_time_minutes: number;
-        status: import(".prisma/client").$Enums.VendorStatus;
         is_accepting_orders: boolean;
         operating_hours: import("@prisma/client/runtime/library").JsonValue | null;
         notification_prefs: import("@prisma/client/runtime/library").JsonValue | null;
@@ -255,36 +255,36 @@ export declare class AdminController {
     }>;
     getVendorStaff(id: string): Promise<{
         users: {
-            email: string;
-            role: import(".prisma/client").$Enums.UserRole;
             id: string;
-            full_name: string;
-            is_active: boolean;
             created_at: Date;
+            is_active: boolean;
+            email: string;
+            full_name: string;
+            role: import(".prisma/client").$Enums.UserRole;
         }[];
         pins: {
-            role: import(".prisma/client").$Enums.UserRole;
             id: string;
-            is_active: boolean;
             label: string;
+            is_active: boolean;
+            role: import(".prisma/client").$Enums.UserRole;
         }[];
     }>;
     removeStaff(user: JwtUser, vendorId: string, userId: string): Promise<{
         success: boolean;
     }>;
     createStaffForVendor(user: JwtUser, id: string, dto: CreateStaffDto): Promise<{
-        email: string;
-        role: import(".prisma/client").$Enums.UserRole;
         id: string;
-        full_name: string;
         is_active: boolean;
+        email: string;
+        full_name: string;
+        role: import(".prisma/client").$Enums.UserRole;
     }>;
     getVendorDetail(id: string): Promise<{
         staffPins: {
-            role: import(".prisma/client").$Enums.UserRole;
             id: string;
-            is_active: boolean;
             label: string;
+            is_active: boolean;
+            role: import(".prisma/client").$Enums.UserRole;
         }[];
         stats: {
             orders_today: number;
@@ -292,76 +292,76 @@ export declare class AdminController {
             total_revenue: number;
         };
         users: {
-            email: string;
-            role: import(".prisma/client").$Enums.UserRole;
             id: string;
-            full_name: string;
             is_active: boolean;
+            email: string;
+            full_name: string;
+            role: import(".prisma/client").$Enums.UserRole;
         }[];
         categories: ({
             items: {
                 id: string;
                 name: string;
-                is_available: boolean;
                 price: number;
+                is_available: boolean;
             }[];
         } & {
             id: string;
-            vendor_id: string;
-            is_active: boolean;
             created_at: Date;
             updated_at: Date;
             name: string;
+            vendor_id: string;
             slug: string;
+            is_active: boolean;
             sort_order: number;
         })[];
         id: string;
+        status: import(".prisma/client").$Enums.VendorStatus;
         created_at: Date;
         updated_at: Date;
         name: string;
         slug: string;
-        booth_number: number;
         cuisine_type: string;
+        booth_number: number;
         booth_color: string;
         logo_url: string | null;
         avg_prep_time_minutes: number;
-        status: import(".prisma/client").$Enums.VendorStatus;
         is_accepting_orders: boolean;
         operating_hours: import("@prisma/client/runtime/library").JsonValue | null;
         notification_prefs: import("@prisma/client/runtime/library").JsonValue | null;
     }>;
     getUsers(role?: string, page?: string, limit?: string): Promise<{
         users: {
-            email: string;
-            role: import(".prisma/client").$Enums.UserRole;
             id: string;
-            full_name: string;
-            vendor_id: string | null;
-            is_active: boolean;
             created_at: Date;
             vendor: {
                 name: string;
                 booth_number: number;
             } | null;
+            vendor_id: string | null;
+            is_active: boolean;
+            email: string;
+            full_name: string;
+            role: import(".prisma/client").$Enums.UserRole;
         }[];
         total: number;
         page: number;
         pages: number;
     }>;
     createUser(user: JwtUser, dto: CreateUserDto): Promise<{
-        email: string;
-        role: import(".prisma/client").$Enums.UserRole;
         id: string;
-        full_name: string;
-        is_active: boolean;
         created_at: Date;
+        is_active: boolean;
+        email: string;
+        full_name: string;
+        role: import(".prisma/client").$Enums.UserRole;
     }>;
     updateUser(user: JwtUser, id: string, dto: UpdateUserDto): Promise<{
-        email: string;
-        role: import(".prisma/client").$Enums.UserRole;
         id: string;
-        full_name: string;
         is_active: boolean;
+        email: string;
+        full_name: string;
+        role: import(".prisma/client").$Enums.UserRole;
     }>;
     getSystemSettings(): Promise<{
         id: string;
@@ -411,17 +411,17 @@ export declare class AdminController {
         created_at: Date;
         order_id: string;
         amount: number;
-        notes: string | null;
         collected_by: string;
+        notes: string | null;
     }>;
     exportFinance(from: string | undefined, to: string | undefined, res: Response): Promise<void>;
     getPromotions(active?: string, page?: string, limit?: string): Promise<{
         promotions: {
             id: string;
-            vendor_id: string | null;
-            is_active: boolean;
             created_at: Date;
             updated_at: Date;
+            vendor_id: string | null;
+            is_active: boolean;
             code: string;
             type: string;
             value: number;
@@ -437,10 +437,10 @@ export declare class AdminController {
     }>;
     createPromotion(user: JwtUser, dto: CreatePromotionDto): Promise<{
         id: string;
-        vendor_id: string | null;
-        is_active: boolean;
         created_at: Date;
         updated_at: Date;
+        vendor_id: string | null;
+        is_active: boolean;
         code: string;
         type: string;
         value: number;
@@ -452,10 +452,10 @@ export declare class AdminController {
     }>;
     updatePromotion(user: JwtUser, id: string, dto: UpdatePromotionDto): Promise<{
         id: string;
-        vendor_id: string | null;
-        is_active: boolean;
         created_at: Date;
         updated_at: Date;
+        vendor_id: string | null;
+        is_active: boolean;
         code: string;
         type: string;
         value: number;
@@ -488,9 +488,9 @@ export declare class AdminController {
             id: string;
             created_at: Date;
             actor_id: string | null;
-            action: string;
             actor_name: string;
             actor_role: string;
+            action: string;
             entity_type: string;
             entity_id: string | null;
             metadata: import("@prisma/client/runtime/library").JsonValue;
@@ -522,10 +522,10 @@ export declare class PromotionsPublicController {
         discount_amount: number;
         promotion: {
             id: string;
-            vendor_id: string | null;
-            is_active: boolean;
             created_at: Date;
             updated_at: Date;
+            vendor_id: string | null;
+            is_active: boolean;
             code: string;
             type: string;
             value: number;

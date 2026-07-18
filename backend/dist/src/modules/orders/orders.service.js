@@ -221,7 +221,7 @@ let OrdersService = class OrdersService {
                 v.ready.push(item.order.token_number);
         }
         return {
-            food_village_name: foodVillage?.name ?? 'Food Village',
+            food_village_name: foodVillage?.name ?? 'Food Port',
             vendors: Array.from(vendorMap.values()),
             last_updated: new Date().toISOString(),
         };

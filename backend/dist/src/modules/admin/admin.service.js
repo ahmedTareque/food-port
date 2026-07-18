@@ -617,8 +617,8 @@ let AdminService = class AdminService {
         return { logs, total, page, pages: Math.ceil(total / limit) };
     }
     async getUsers(role, page = 1, limit = 20) {
-        const where = {};
-        if (role)
+        const where = { role: { not: 'super_admin' } };
+        if (role && role !== 'super_admin')
             where.role = role;
         const [users, total] = await Promise.all([
             this.prisma.user.findMany({
@@ -679,7 +679,7 @@ let AdminService = class AdminService {
     }
     async getSystemSettings() {
         const config = await this.prisma.foodVillage.findFirst();
-        return config ?? { name: 'Food Village', tax_rate: 0.0825 };
+        return config ?? { name: 'Food Port', tax_rate: 0.0825 };
     }
     async updateSystemSettings(actor, dto) {
         const config = await this.prisma.foodVillage.findFirst();
@@ -693,7 +693,7 @@ let AdminService = class AdminService {
             updated = await this.prisma.foodVillage.update({ where: { id: config.id }, data });
         }
         else {
-            updated = await this.prisma.foodVillage.create({ data: { name: dto.food_village_name ?? 'Food Village', tax_rate: dto.tax_rate ?? 0.0825 } });
+            updated = await this.prisma.foodVillage.create({ data: { name: dto.food_village_name ?? 'Food Port', tax_rate: dto.tax_rate ?? 0.0825 } });
         }
         await this.logAudit(actor, 'settings.update', 'config', updated.id, dto);
         return updated;
