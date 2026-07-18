@@ -57,7 +57,7 @@ export default function DisplayBoardPage() {
       {/* Header */}
       <header className="flex items-center justify-between px-10 py-5 border-b border-black/6">
         <h1 className="font-heading text-5xl text-brand-orange tracking-[0.2em]">
-          FOOD VILLAGE
+          FOOD PORT
         </h1>
         <div className="text-right">
           <p className="font-mono text-4xl text-brand-white">{clock}</p>
@@ -189,7 +189,7 @@ export default function DisplayBoardPage() {
         >
           🔔 &nbsp; Please listen for your token number to be called &nbsp; · &nbsp;
           Collect your order from the respective booth &nbsp; · &nbsp;
-          Thank you for dining with us at Food Village! &nbsp; 🍽️
+          Thank you for dining with us at Food Port! &nbsp; 🍽️
         </motion.p>
       </div>
     </div>

@@ -529,7 +529,7 @@ export default function OperationsPage() {
                 <GlassCard className="text-center py-10">
                   <p className="text-brand-dim text-sm">No suggestions yet.</p>
                   {isCurrentMonth && (
-                    <p className="text-xs text-brand-dim mt-1">Share ideas to improve the food village — 5 required per month.</p>
+                    <p className="text-xs text-brand-dim mt-1">Share ideas to improve the food port — 5 required per month.</p>
                   )}
                 </GlassCard>
               ) : (

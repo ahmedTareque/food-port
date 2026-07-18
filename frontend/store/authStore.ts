@@ -6,6 +6,7 @@ import { setToken, clearToken } from '@/lib/api';
 interface AuthUser {
   id: string;
   email: string;
+  full_name?: string | null;
   role: string;
   vendor_id: string | null;
 }

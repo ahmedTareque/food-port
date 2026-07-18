@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="w-56 shrink-0 border-r border-black/6 flex flex-col">
         {/* Logo */}
         <div className="px-5 py-6 border-b border-black/6">
-          <p className="font-mono text-xs text-brand-dim uppercase tracking-widest mb-0.5">Food Village</p>
+          <p className="font-mono text-xs text-brand-dim uppercase tracking-widest mb-0.5">Food Port</p>
           <h2 className="font-heading text-2xl text-brand-orange tracking-widest">ADMIN</h2>
         </div>
 

@@ -662,8 +662,9 @@ export class AdminService {
   // ─── User Management ─────────────────────────────────────────────────────────
 
   async getUsers(role?: string, page = 1, limit = 20) {
-    const where: Record<string, unknown> = {};
-    if (role) where.role = role;
+    // super_admin accounts are never listed here, even if explicitly requested
+    const where: Record<string, unknown> = { role: { not: 'super_admin' } };
+    if (role && role !== 'super_admin') where.role = role;
 
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
@@ -733,7 +734,7 @@ export class AdminService {
 
   async getSystemSettings() {
     const config = await this.prisma.foodVillage.findFirst();
-    return config ?? { name: 'Food Village', tax_rate: 0.0825 };
+    return config ?? { name: 'Food Port', tax_rate: 0.0825 };
   }
 
   async updateSystemSettings(actor: JwtUser, dto: SystemSettingsDto) {
@@ -746,7 +747,7 @@ export class AdminService {
     if (config) {
       updated = await this.prisma.foodVillage.update({ where: { id: config.id }, data });
     } else {
-      updated = await this.prisma.foodVillage.create({ data: { name: dto.food_village_name ?? 'Food Village', tax_rate: dto.tax_rate ?? 0.0825 } });
+      updated = await this.prisma.foodVillage.create({ data: { name: dto.food_village_name ?? 'Food Port', tax_rate: dto.tax_rate ?? 0.0825 } });
     }
     await this.logAudit(actor, 'settings.update', 'config', updated.id, dto as Record<string, unknown>);
     return updated;

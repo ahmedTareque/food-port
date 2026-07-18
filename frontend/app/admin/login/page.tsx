@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
         className="relative z-10 w-full max-w-sm"
       >
         <div className="text-center mb-8">
-          <p className="font-mono text-xs text-brand-dim uppercase tracking-widest mb-2">Food Village</p>
+          <p className="font-mono text-xs text-brand-dim uppercase tracking-widest mb-2">Food Port</p>
           <h1 className="font-heading text-5xl text-brand-white tracking-widest">ADMIN</h1>
           <div className="w-8 h-0.5 bg-brand-orange mx-auto mt-3" />
         </div>

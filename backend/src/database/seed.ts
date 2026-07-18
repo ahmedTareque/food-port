@@ -404,13 +404,13 @@ const MENU_TEMPLATES: Record<string, { categories: { name: string; items: { name
 };
 
 async function main() {
-  console.log('🌱 Seeding Food Village database...');
+  console.log('🌱 Seeding Food Port database...');
 
-  // Food Village config
+  // Food Port config
   await prisma.foodVillage.upsert({
     where: { id: 'fv-main' },
     update: {},
-    create: { id: 'fv-main', name: 'The Food Village', tagline: 'Good Food. Great Vibes.', tax_rate: 0.0825 },
+    create: { id: 'fv-main', name: 'The Food Port', tagline: 'Good Food. Great Vibes.', tax_rate: 0.0825 },
   });
 
   // Tables 1-20
@@ -635,7 +635,7 @@ async function main() {
   console.log('\n🎉 Seed complete!');
   console.log('  • 17 vendors with menus (incl. Food Port and 6 booth vendors with BDT pricing)');
   console.log('  • 20 tables');
-  console.log('  • 1 food village config');
+  console.log('  • 1 food port config');
   console.log('  • Super admin: admin@foodvillage.com / admin123');
   console.log('  • Vendor managers: booth1–17@foodvillage.com / vendor123');
   console.log('  • Kitchen PIN (Burger Barn): 1234');

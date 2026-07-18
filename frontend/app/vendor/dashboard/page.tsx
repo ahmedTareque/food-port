@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { apiFetch } from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
 import GlassCard from '@/components/ui/GlassCard';
 import Spinner from '@/components/ui/Spinner';
 
@@ -62,6 +63,7 @@ function RevenueSparkline({ days }: { days: WeeklyDay[] }) {
 }
 
 export default function DashboardPage() {
+  const user = useAuthStore((s) => s.user);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [weekly, setWeekly] = useState<WeeklyDay[]>([]);
@@ -88,7 +90,12 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <h1 className="font-heading text-4xl text-brand-white tracking-widest">DASHBOARD</h1>
+      <div>
+        <h1 className="font-heading text-4xl text-brand-white tracking-widest">DASHBOARD</h1>
+        {(user?.full_name || user?.email) && (
+          <p className="text-sm text-brand-chrome mt-1">Welcome back, {user.full_name || user.email}</p>
+        )}
+      </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">

@@ -136,7 +136,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
         )}
         <div className="flex-1">
           <span className="font-heading text-xl text-brand-orange tracking-widest">
-            FOOD VILLAGE
+            FOOD PORT
           </span>
           {tableNumber && (
             <span className="ml-3 text-xs font-mono text-brand-dim">

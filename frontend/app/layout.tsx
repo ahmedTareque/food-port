@@ -5,8 +5,8 @@ import ToastContainer from '@/components/ui/Toast';
 import FontProvider from '@/components/ui/FontProvider';
 
 export const metadata: Metadata = {
-  title: 'Food Village POS',
-  description: 'Order from your favourite booths at Food Village',
+  title: 'Food Port POS',
+  description: 'Order from your favourite booths at Food Port',
   manifest: '/manifest.json',
 };
 
@@ -28,6 +28,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <FontProvider />
         {children}
         <ToastContainer />
+        <a
+          href="https://sapiensstation.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-2 right-2 z-[60] text-[10px] text-brand-dim/50 hover:text-brand-dim transition-colors"
+        >
+          made with ♥ by Sapiens Station
+        </a>
         <Script id="sw-register" strategy="afterInteractive">
           {`if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(() => {}); }`}
         </Script>

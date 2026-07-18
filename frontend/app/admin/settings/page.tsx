@@ -63,10 +63,10 @@ export default function AdminSettingsPage() {
       <h1 className="font-heading text-4xl text-brand-white tracking-widest mb-6">SETTINGS</h1>
 
       <GlassCard className="p-6 space-y-5">
-        <h2 className="font-heading text-xl text-brand-white tracking-wide">Food Village Config</h2>
+        <h2 className="font-heading text-xl text-brand-white tracking-wide">Food Port Config</h2>
 
         {[
-          { label: 'Food Village Name', key: 'name', type: 'text', placeholder: 'Food Village' },
+          { label: 'Food Port Name', key: 'name', type: 'text', placeholder: 'Food Port' },
           { label: 'Tagline', key: 'tagline', type: 'text', placeholder: 'Your food court tagline' },
           { label: 'Address', key: 'address', type: 'text', placeholder: '123 Main St...' },
           { label: 'Tax Rate (%)', key: 'tax_rate', type: 'number', placeholder: '8.25' },
@@ -88,7 +88,7 @@ export default function AdminSettingsPage() {
         )}
 
         {!canEdit && (
-          <p className="text-xs text-brand-dim">Only super admins can edit food village settings.</p>
+          <p className="text-xs text-brand-dim">Only super admins can edit food port settings.</p>
         )}
         <Button onClick={handleSave} loading={saving} disabled={!canEdit} size="lg" className="w-full font-heading tracking-widest">
           SAVE SETTINGS

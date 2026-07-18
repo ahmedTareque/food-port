@@ -18,7 +18,8 @@ interface User {
   vendor?: { name: string; booth_number: number } | null;
 }
 
-const ROLES = ['super_admin', 'admin', 'vendor_owner', 'vendor_kitchen', 'vendor_cashier', 'waiter'];
+// super_admin intentionally excluded — not a role assignable or visible via this UI
+const ROLES = ['admin', 'vendor_owner', 'vendor_kitchen', 'vendor_cashier', 'waiter'];
 
 const ROLE_COLOR: Record<string, string> = {
   super_admin: '#EF4444',

@@ -1,6 +1,6 @@
 {
-  "name": "Food Village POS",
-  "short_name": "Food Village",
+  "name": "Food Port POS",
+  "short_name": "Food Port",
   "description": "Multi-vendor food court ordering system",
   "start_url": "/order",
   "display": "standalone",

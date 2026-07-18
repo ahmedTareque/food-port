@@ -63,7 +63,8 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
       {/* Sidebar */}
       <aside className="w-[220px] flex-shrink-0 glass border-r border-black/6 flex flex-col">
         <div className="px-5 py-5 border-b border-black/6">
-          <h1 className="font-heading text-2xl text-brand-orange tracking-widest">FOOD VILLAGE</h1>
+          <h1 className="font-heading text-2xl text-brand-orange tracking-widest">FOOD PORT</h1>
+          <p className="text-sm text-brand-white font-semibold mt-2">{user?.full_name || user?.email}</p>
           <p className="text-xs text-brand-dim font-mono mt-0.5">{user?.email}</p>
         </div>
 

@@ -14,7 +14,7 @@ const PIN_PAD = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '↵']
 
 interface AuthResponse {
   access_token: string;
-  user: { id: string; email: string; role: string; vendor_id: string | null };
+  user: { id: string; email: string; full_name: string; role: string; vendor_id: string | null };
 }
 
 interface PinAuthResponse {
@@ -64,6 +64,7 @@ export default function VendorLoginPage() {
       login(res.access_token, {
         id: res.staff.pin_id,
         email: `${res.staff.label} @ ${res.staff.vendor_name}`,
+        full_name: res.staff.label,
         role: res.staff.role,
         vendor_id: res.staff.vendor_id,
       });
@@ -99,7 +100,7 @@ export default function VendorLoginPage() {
         className="w-full max-w-sm"
       >
         <div className="text-center mb-8">
-          <h1 className="font-heading text-5xl text-brand-orange tracking-widest">FOOD VILLAGE</h1>
+          <h1 className="font-heading text-5xl text-brand-orange tracking-widest">FOOD PORT</h1>
           <p className="text-brand-dim text-sm mt-1 font-body">Vendor Portal</p>
         </div>
 
